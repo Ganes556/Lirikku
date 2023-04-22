@@ -1,7 +1,11 @@
 package models
 
 import (
-	"github.com/Lirikku/utils"
+	"os"
+	"time"
+
+	"github.com/golang-jwt/jwt/v4"
+	"golang.org/x/crypto/bcrypt"
 	"gorm.io/gorm"
 )
 
@@ -19,7 +23,32 @@ type ReqAuthUser struct {
 	Password string `json:"password"`
 }
 
+type JwtClaims struct {
+	ID    uint   `json:"id"`
+	Name string `json:"name"`
+	jwt.RegisteredClaims
+}
+
 func (u *User) BeforeCreate(tx *gorm.DB) (err error) {
-	u.Password = utils.HashPassword(u.Password)
+	hash, _ := bcrypt.GenerateFromPassword([]byte(u.Password), bcrypt.DefaultCost)
+	u.Password = string(hash)
 	return
+}
+
+func (u *User) CheckPassword(hash, plain string) bool {
+	err := bcrypt.CompareHashAndPassword([]byte(hash), []byte(plain))
+	return err == nil
+}
+
+func (u *User) GenerateToken() (string, error) {
+	claims := &JwtClaims{
+		ID: u.ID,
+		Name: u.Name,
+		RegisteredClaims: jwt.RegisteredClaims{
+			ExpiresAt: jwt.NewNumericDate(time.Now().Add(time.Hour * 24)),
+		},
+	}
+	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
+	
+	return token.SignedString([]byte(os.Getenv("JWT_KEY")))
 }
