@@ -15,6 +15,7 @@ func NewRoute() *echo.Echo{
 	// auth
 	authGroup := e.Group("/auth")
 	authGroup.POST("/register", controllers.Register)
+	authGroup.POST("/login", controllers.Login)
 
 	return e
 }
