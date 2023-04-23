@@ -23,7 +23,7 @@ type ReqAuthUser struct {
 	Password string `json:"password"`
 }
 
-type JwtClaims struct {
+type JWTClaims struct {
 	ID    uint   `json:"id"`
 	Name string `json:"name"`
 	jwt.RegisteredClaims
@@ -41,7 +41,7 @@ func (u *User) CheckPassword(hash, plain string) bool {
 }
 
 func (u *User) GenerateToken() (string, error) {
-	claims := &JwtClaims{
+	claims := &JWTClaims{
 		ID: u.ID,
 		Name: u.Name,
 		RegisteredClaims: jwt.RegisteredClaims{
@@ -50,5 +50,5 @@ func (u *User) GenerateToken() (string, error) {
 	}
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
 	
-	return token.SignedString([]byte(os.Getenv("JWT_KEY")))
+	return token.SignedString([]byte(os.Getenv("JWT_SECRET")))
 }
