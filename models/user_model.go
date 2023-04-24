@@ -23,8 +23,7 @@ type UserRegister struct {
 	Password string `json:"password"`
 }
 
-type UserLogged struct {
-	Name 	 string `json:"name"`
+type UserLogin struct {
 	Email 	string `json:"email"`
 	Password string `json:"password"`
 }
@@ -41,8 +40,8 @@ func (u *User) BeforeCreate(tx *gorm.DB) (err error) {
 	return
 }
 
-func (u *User) CheckPassword(hash, plain string) bool {
-	err := bcrypt.CompareHashAndPassword([]byte(hash), []byte(plain))
+func (u *User) CheckPassword(plain string) bool {
+	err := bcrypt.CompareHashAndPassword([]byte(u.Password), []byte(plain))
 	return err == nil
 }
 
