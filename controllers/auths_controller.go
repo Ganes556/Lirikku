@@ -10,7 +10,7 @@ import (
 
 func Register(c echo.Context) error {
 	
-	reqAuth := models.ReqAuthUser{}
+	reqAuth := models.UserRegister{}
 
 	c.Bind(&reqAuth)
 
@@ -41,7 +41,7 @@ func Register(c echo.Context) error {
 
 func Login(c echo.Context) error {
 	
-	reqAuth := models.ReqAuthUser{}
+	reqAuth := models.UserLogin{}
 
 	c.Bind(&reqAuth)
 
@@ -55,9 +55,9 @@ func Login(c echo.Context) error {
 		})
 	}
 
-	if !user.CheckPassword(user.Password, reqAuth.Password) {
+	if !user.CheckPassword(reqAuth.Password) {
 		return echo.NewHTTPError(http.StatusBadRequest, echo.Map{
-			"message": "wrong password",
+			"message": "invalid email or password",
 		})
 	}
 

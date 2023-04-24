@@ -17,13 +17,18 @@ type User struct {
 	Songs 	[]SongLyric `json:"songs" gorm:"foreignKey:UserID"`
 }
 
-type ReqAuthUser struct {
+type UserRegister struct {
 	Name 	 string `json:"name"`
 	Email 	string `json:"email"`
 	Password string `json:"password"`
 }
 
-type JwtClaims struct {
+type UserLogin struct {
+	Email 	string `json:"email"`
+	Password string `json:"password"`
+}
+
+type JWTClaims struct {
 	ID    uint   `json:"id"`
 	Name string `json:"name"`
 	jwt.RegisteredClaims
@@ -35,13 +40,13 @@ func (u *User) BeforeCreate(tx *gorm.DB) (err error) {
 	return
 }
 
-func (u *User) CheckPassword(hash, plain string) bool {
-	err := bcrypt.CompareHashAndPassword([]byte(hash), []byte(plain))
+func (u *User) CheckPassword(plain string) bool {
+	err := bcrypt.CompareHashAndPassword([]byte(u.Password), []byte(plain))
 	return err == nil
 }
 
 func (u *User) GenerateToken() (string, error) {
-	claims := &JwtClaims{
+	claims := &JWTClaims{
 		ID: u.ID,
 		Name: u.Name,
 		RegisteredClaims: jwt.RegisteredClaims{
@@ -50,5 +55,5 @@ func (u *User) GenerateToken() (string, error) {
 	}
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
 	
-	return token.SignedString([]byte(os.Getenv("JWT_KEY")))
+	return token.SignedString([]byte(os.Getenv("JWT_SECRET")))
 }
