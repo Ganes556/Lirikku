@@ -14,10 +14,16 @@ type User struct {
 	Name 	 string `json:"name" gorm:"type:varchar(150)"`
 	Email 	string `json:"email" gorm:"type:varchar(255)"`
 	Password string `json:"password" gorm:"type:varchar(64)"`
-	Songs 	[]SongLyric `json:"songs" gorm:"foreignKey:UserID"`
+	SongLyrics 	[]SongLyric `json:"song_lyrics" gorm:"foreignKey:UserID"`
 }
 
-type ReqAuthUser struct {
+type UserRegister struct {
+	Name 	 string `json:"name"`
+	Email 	string `json:"email"`
+	Password string `json:"password"`
+}
+
+type UserLogged struct {
 	Name 	 string `json:"name"`
 	Email 	string `json:"email"`
 	Password string `json:"password"`
