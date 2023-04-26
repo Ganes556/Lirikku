@@ -26,6 +26,13 @@ func JwtMiddleware() echo.MiddlewareFunc {
 				return []byte(os.Getenv("JWT_SECRET")), nil
 			})
 		},
+		SuccessHandler: func(c echo.Context) {
+			data := c.Get("user").(*jwt.Token).Claims.(*models.JWTClaims)
+			c.Set("user", models.UserJWTDecode{
+				ID: data.ID,
+				Name: data.Name,
+			})
+		},
 		ErrorHandler: func(c echo.Context, err error) error {
 			if err.Error() != "token expired" {
 				return echo.NewHTTPError(http.StatusUnauthorized, "invalid token")
