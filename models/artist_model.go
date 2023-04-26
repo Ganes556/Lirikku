@@ -1,9 +1,7 @@
 package models
 
-import "gorm.io/gorm"
-
 type Artist struct {
-	gorm.Model `json:"-"`
-	SongLyrics      []*SongLyric `gorm:"many2many:song_artists;" json:"song_lyrics"`
-	Name       string `json:"name" gorm:"type:varchar(150)"`
+	Base
+	SongLyrics []*SongLyric `gorm:"many2many:song_artists;" json:"song_artists"`
+	Name       string       `json:"name" gorm:"type:varchar(150)"`
 }
