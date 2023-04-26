@@ -3,7 +3,7 @@ package models
 type SongLyric struct {
 	Base
 	UserID  uint      `json:"user_id" gorm:"type:unsignedInteger"`
-	Artists []*Artist `json:"artists" gorm:"many2many:song_artists;"`
+	Artists []*Artist `json:"artists" gorm:"many2many:song_lyrics_artists;"`
 	Title   string    `json:"title" gorm:"type:varchar(150)"`
 	Lyric   string    `json:"lyric"`
 }
