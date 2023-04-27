@@ -7,7 +7,6 @@ import (
 	"github.com/Lirikku/models"
 	"github.com/labstack/echo/v4"
 	"gorm.io/gorm"
-	"gorm.io/gorm/clause"
 )
 
 func GetMySongLyrics(c echo.Context) error {
@@ -25,10 +24,31 @@ func GetMySongLyrics(c echo.Context) error {
 	})
 }
 
+func GetMySongLyric(c echo.Context) error {
+
+	user := c.Get("user").(models.UserJWTDecode)
+	var songLyrics []models.SongLyric
+	
+	idSongLyric := c.Param("id")
+
+	// load song lyrics with artist by id song lyrics
+	configs.DB.
+	Preload("Artists", func(tx *gorm.DB) *gorm.DB{
+		return tx.Omit("created_at,deleted_at,updated_at")
+	}).
+	Omit("created_at,deleted_at,updated_at").
+	Where("id = ? AND user_id = ?", idSongLyric, user.ID).
+	Find(&songLyrics)
+
+	return c.JSON(http.StatusOK, echo.Map{
+		"my_song_lyrics": songLyrics,
+	})
+}
+
 func SaveMySongLyric(c echo.Context) error {
 	user := c.Get("user").(models.UserJWTDecode)
 	
-	var songLyric models.SaveSongLyric
+	var songLyric models.WriteSongLyric
 
 	c.Bind(&songLyric)
 
@@ -51,8 +71,6 @@ func SearchMySongLyric(c echo.Context) error {
 	
 	
 	var songLyrics []models.SongLyric
-	configs.DB.Debug().Select(clause.Associations).Find(&songLyrics) 
-	
 	
 	title := c.QueryParam("title")
 	lyric := c.QueryParam("lyric")
@@ -64,10 +82,9 @@ func SearchMySongLyric(c echo.Context) error {
 					WHERE sl.user_id = ? 
 					AND sl.title LIKE ?
 					AND sl.lyric LIKE ?
-					AND a.name LIKE ? 
-					AND sl.deleted_at IS NULL;`
+					AND a.name LIKE ?`
 
-	configs.DB.Debug().Raw(querySql, user.ID, "%"+title+"%", "%"+lyric+"%","%"+artists+"%").Preload("Artists").Find(&songLyrics)
+	configs.DB.Raw(querySql, user.ID, "%"+title+"%", "%"+lyric+"%","%"+artists+"%").Preload("Artists").Find(&songLyrics)
 	
 	// load all song lyrics with artist
 	// configs.DB.Debug().Preload("Artists").Where("user_id = ? AND (title LIKE ? OR lyric LIKE ? OR artists.name LIKE ?)", user.ID, "%"+title+"%", "%"+lyric+"%","%"+artists+"%").Find(&songLyrics)
@@ -108,4 +125,34 @@ func DeleteMySongLyric(c echo.Context) error {
 		"message": "Song lyric deleted successfully",
 	})
 
+}
+
+func UpdateMySongLyric(c echo.Context) error {
+	user := c.Get("user").(models.UserJWTDecode)
+	
+	idSongLyric := c.Param("id")
+
+	err := configs.DB.First(&models.SongLyric{}, "id = ? AND user_id = ?", idSongLyric, user.ID).Error
+	
+	if err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, echo.Map{
+			"message": "song lyric not found",
+		})
+	}
+
+	var updateSongLyric models.WriteSongLyric
+
+	c.Bind(&updateSongLyric)
+
+	newUpdatedSongLyric := updateSongLyric.Convert2SongLyric(user.ID)
+
+	err = configs.DB.Where("id = ?", idSongLyric).Updates(&newUpdatedSongLyric).Error
+
+	if err != nil {
+		return err
+	}
+
+	return c.JSON(http.StatusOK, echo.Map{
+		"message": "Song lyric updated successfully",
+	})
 }
