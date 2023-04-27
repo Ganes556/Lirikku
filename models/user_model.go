@@ -10,11 +10,11 @@ import (
 )
 
 type User struct {
-	gorm.Model `json:"-"`
+	Base
 	Name 	 string `json:"name" gorm:"type:varchar(150)"`
 	Email 	string `json:"email" gorm:"type:varchar(255)"`
 	Password string `json:"password" gorm:"type:varchar(64)"`
-	Songs 	[]SongLyric `json:"songs" gorm:"foreignKey:UserID"`
+	SongLyrics 	[]SongLyric `json:"song_lyrics" gorm:"foreignKey:UserID"`
 }
 
 type UserRegister struct {
@@ -26,6 +26,11 @@ type UserRegister struct {
 type UserLogin struct {
 	Email 	string `json:"email"`
 	Password string `json:"password"`
+}
+
+type UserJWTDecode struct {
+	ID uint
+	Name string
 }
 
 type JWTClaims struct {
