@@ -1,11 +1,21 @@
 package models
 
+import "gorm.io/gorm"
+
 type SongLyric struct {
 	Base
 	UserID  uint      `json:"-" gorm:"type:unsignedInteger"`
-	Artists []*Artist `json:"artists" gorm:"many2many:song_lyric_artists;"`
+	Artists []*Artist `json:"artists" gorm:"many2many:song_lyric_artists;constraint:OnDelete:CASCADE;"`
 	Title   string    `json:"title" gorm:"type:varchar(150)"`
 	Lyric   string    `json:"lyric"`
+}
+
+// hooks
+func (s *SongLyric) AfterDelete(tx *gorm.DB) (err error) {
+	tx.Model(&Artist{}).Unscoped().Delete(s.Artists)
+	tx.Exec("ALTER TABLE artists AUTO_INCREMENT = 1")
+	tx.Exec("ALTER TABLE song_lyrics AUTO_INCREMENT = 1")
+	return
 }
 
 type SaveSongLyric struct {

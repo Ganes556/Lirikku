@@ -28,6 +28,11 @@ type UserLogin struct {
 	Password string `json:"password"`
 }
 
+type UserJWTDecode struct {
+	ID uint
+	Name string
+}
+
 type JWTClaims struct {
 	ID    uint   `json:"id"`
 	Name string `json:"name"`
