@@ -18,13 +18,14 @@ func (s *SongLyric) AfterDelete(tx *gorm.DB) (err error) {
 	return
 }
 
-type SaveSongLyric struct {
+// save & update
+type WriteSongLyric struct {
 	Title   string   `json:"title"`
 	Lyric   string   `json:"lyric"`
 	Artists []string `json:"artists"`
 }
 
-func (s *SaveSongLyric) Convert2SongLyric(userID uint) *SongLyric {
+func (s *WriteSongLyric) Convert2SongLyric(userID uint) *SongLyric {
 	var songLyric SongLyric
 	songLyric.UserID = userID
 	songLyric.Title = s.Title
