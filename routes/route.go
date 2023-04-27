@@ -27,6 +27,7 @@ func NewRoute() *echo.Echo{
 		mySongLyricGroup.GET("", controllers.GetMySongLyrics)
 		mySongLyricGroup.POST("", controllers.SaveMySongLyric)
 		mySongLyricGroup.DELETE("/:id", controllers.DeleteMySongLyric)
+		mySongLyricGroup.PUT("/:id", controllers.UpdateMySongLyric)
 		mySongLyricGroup.GET("/search", controllers.SearchMySongLyric)
 	}   
 	
