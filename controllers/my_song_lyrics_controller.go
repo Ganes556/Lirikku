@@ -17,34 +17,39 @@ func GetMySongLyrics(c echo.Context) error {
 	// load all song lyrics with artist
 	configs.DB.Preload("Artists", func(tx *gorm.DB) *gorm.DB{
 		return tx.Omit("created_at,deleted_at,updated_at")
-	}).Omit("created_at,deleted_at,updated_at").Where("user_id = ?", user.ID).Find(&songLyrics)
+	}).Omit("user_id,created_at,deleted_at,updated_at").Where("user_id = ?", user.ID).Find(&songLyrics)
+	
+	var resSongLyrics []models.ResponseSongLyric
 
+	for _, songLyric := range songLyrics {
+		resSongLyrics = append(resSongLyrics, songLyric.Convert2ResSongLyric())
+	}
+	
 	return c.JSON(http.StatusOK, echo.Map{
-		"my_song_lyrics": songLyrics,
+		"my_song_lyrics": resSongLyrics,
 	})
 }
 
 func GetMySongLyric(c echo.Context) error {
 
 	user := c.Get("user").(models.UserJWTDecode)
-	var songLyrics []models.SongLyric
+	var songLyric models.SongLyric
 	
 	idSongLyric := c.Param("id")
 
 	// load song lyrics with artist by id song lyrics
 	err := configs.DB.Preload("Artists", func(tx *gorm.DB) *gorm.DB{
 		return tx.Omit("created_at,deleted_at,updated_at")
-	}).Omit("created_at,deleted_at,updated_at").Where("id = ? AND user_id = ?", idSongLyric, user.ID).First(&songLyrics).Error
+	}).Omit("user_id,created_at,deleted_at,updated_at").Where("id = ? AND user_id = ?", idSongLyric, user.ID).First(&songLyric).Error
 	
 	if err != nil {
 		return echo.NewHTTPError(http.StatusBadRequest, echo.Map{
 			"message": "song lyric not found",
 		})
 	}
-	
 
 	return c.JSON(http.StatusOK, echo.Map{
-		"my_song_lyrics": songLyrics,
+		"my_song_lyrics": songLyric.Convert2ResSongLyric(),
 	})
 }
 
