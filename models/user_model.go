@@ -10,12 +10,11 @@ import (
 )
 
 type User struct {
-	ID      uint `json:"id" gorm:"primarykey"` 
+	Base
 	Name 	  string `json:"name" gorm:"type:varchar(150)"`
 	Email 	 string `json:"email" gorm:"type:varchar(255)"`
 	Password string `json:"password" gorm:"type:varchar(64)"`
 	SongLyrics 	[]SongLyric `json:"song_lyrics" gorm:"foreignKey:UserID"`
-	Base
 }
 
 type UserRegister struct {
