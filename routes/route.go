@@ -21,15 +21,18 @@ func NewRoute() *echo.Echo{
 	}
 
 	// my song lyrics
-	mySongLyricGroup := e.Group("/my_song_lyrics")
+	songLyricGroup := e.Group("/song_lyrics")
 	{
-		mySongLyricGroup.Use(middlewares.JwtMiddleware())
-		mySongLyricGroup.GET("", controllers.GetMySongLyrics)
-		mySongLyricGroup.GET("/:id", controllers.GetMySongLyric)
-		mySongLyricGroup.GET("/search", controllers.SearchMySongLyric)
-		mySongLyricGroup.POST("", controllers.SaveMySongLyric)
-		mySongLyricGroup.DELETE("/:id", controllers.DeleteMySongLyric)
-		mySongLyricGroup.PUT("/:id", controllers.UpdateMySongLyric)
+		mySongLyricGroup := songLyricGroup.Group("/my")
+		{
+			mySongLyricGroup.Use(middlewares.JwtMiddleware())
+			mySongLyricGroup.GET("", controllers.GetMySongLyrics)
+			mySongLyricGroup.GET("/:id", controllers.GetMySongLyric)
+			mySongLyricGroup.GET("/search", controllers.SearchMySongLyric)
+			mySongLyricGroup.POST("", controllers.SaveMySongLyric)
+			mySongLyricGroup.DELETE("/:id", controllers.DeleteMySongLyric)
+			mySongLyricGroup.PUT("/:id", controllers.UpdateMySongLyric)
+		}
 	}   
 
 	return e
