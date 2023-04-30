@@ -38,3 +38,39 @@ func Register(c echo.Context) error {
 		"message": "success created user",
 	})
 }
+
+func Login(c echo.Context) error {
+	
+	reqAuth := models.UserLogin{}
+
+	c.Bind(&reqAuth)
+
+	user := models.User{}
+
+	err := configs.DB.First(&user,"email = ?", reqAuth.Email).Error
+	
+	if err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, echo.Map{
+			"message": "email not registered",
+		})
+	}
+
+	if !user.CheckPassword(reqAuth.Password) {
+		return echo.NewHTTPError(http.StatusBadRequest, echo.Map{
+			"message": "invalid email or password",
+		})
+	}
+
+	token, err := user.GenerateToken()
+
+	if err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, echo.Map{
+			"message": "failed to generate token",
+		})
+	}
+
+	return c.JSON(http.StatusOK, echo.Map{
+		"message": "success login",
+		"token": token,
+	})
+}
