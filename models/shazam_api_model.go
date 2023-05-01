@@ -42,7 +42,7 @@ func (sl *ResponseShazamSearchKey) GetLyrics() (lyrics string) {
 }
 
 
-func (sl *ResponseShazamSearchKey) GetResponsePublicSongLyric() (res ResponsePublicSongLyric) {
+func (sl *ResponseShazamSearchKey) GetInResponsePublicSongLyric() (res ResponsePublicSongLyric) {
 	res.Title = sl.Title
 	res.ArtistNames = sl.Subtitle
 	res.Lyric = sl.GetLyrics()
