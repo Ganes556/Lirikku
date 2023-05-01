@@ -23,6 +23,10 @@ type ReponseShazamSearchTerm struct {
 }
 
 type ResponseShazamSearchKey struct {
+	Title    string `json:"title"`
+	Artists []struct {
+		Alias  string `json:"alias"`
+	} `json:"artists"`
 	Sections []struct {
 		Text []string `json:"text,omitempty"`
 	} `json:"sections"`
