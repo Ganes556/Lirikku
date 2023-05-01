@@ -2,6 +2,8 @@ package controllers
 
 import (
 	"net/http"
+	"net/url"
+	"strconv"
 
 	"github.com/Lirikku/configs"
 	"github.com/Lirikku/models"
@@ -28,8 +30,12 @@ func GetMySongLyrics(c echo.Context) error {
 	// load all song lyrics with artist
 	configs.DB.Model(&models.SongLyric{}).Limit(5).Offset(offsetInt).Find(&resSongLyrics, "user_id = ?", user.ID)
 	
+	next := utils.GenerateNextLink(c, len(resSongLyrics), url.Values{
+		"offset": {strconv.Itoa(offsetInt + 5)},
+	}.Encode())
+
 	return c.JSON(http.StatusOK, echo.Map{
-		"next": utils.GenerateNextLink(c, offsetInt, len(resSongLyrics)),
+		"next": next,
 		"my_song_lyrics": resSongLyrics,
 	})
 }
@@ -107,8 +113,15 @@ func SearchMySongLyric(c echo.Context) error {
 	
 	configs.DB.Model(&models.SongLyric{}).Where("user_id = ? AND title LIKE ? AND lyric LIKE ? AND artist_names LIKE ?", user.ID, "%"+title+"%", "%"+lyric+"%", "%"+artist_names+"%").Limit(5).Offset(offsetInt).Find(&resSongLyrics)
 
+	next := utils.GenerateNextLink(c, len(resSongLyrics), url.Values{
+		"title": {title},
+		"lyric": {lyric},
+		"artist_names": {artist_names},
+		"offset": {strconv.Itoa(offsetInt + 5)},
+	}.Encode())
+
 	return c.JSON(http.StatusOK, echo.Map{
-		"next": utils.GenerateNextLink(c, offsetInt, len(resSongLyrics)),
+		"next": next,
 		"my_song_lyrics": resSongLyrics,
 	})
 }
