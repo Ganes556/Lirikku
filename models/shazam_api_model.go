@@ -9,21 +9,14 @@ type ReponseShazamSearchTerm struct {
 		Hits []struct {
 			Track struct {
 				Key   string `json:"key"`
-				Title string `json:"title"`
 			} `json:"track"`
 		} `json:"hits"`
 	} `json:"tracks"`
-	Artists struct {
-		Hits []struct {
-			Artist struct {
-				Name string `json:"name"`
-			} `json:"artist"`
-		} `json:"hits"`
-	} `json:"artists"`
 }
 
 type ResponseShazamSearchKey struct {
 	Title    string `json:"title"`
+	Subtitle string `json:"subtitle"`
 	Artists []struct {
 		Alias  string `json:"alias"`
 	} `json:"artists"`
@@ -32,23 +25,7 @@ type ResponseShazamSearchKey struct {
 	} `json:"sections"`
 }
 
-func (sm *ReponseShazamSearchTerm) GetTitles() (titles []string) {
-	if len(sm.Tracks.Hits) > 0 {
-		for _, track := range sm.Tracks.Hits {
-			titles = append(titles, track.Track.Title)
-		}
-	}
-	return titles
-}
-
-func (sm *ReponseShazamSearchTerm) GetArtists() (artists []string) {
-	if len(sm.Artists.Hits) > 0 {
-		for _, artist := range sm.Artists.Hits {
-			artists = append(artists, artist.Artist.Name)
-		}
-	}
-	return artists
-}
+// search term
 
 func (sm *ReponseShazamSearchTerm) GetKeys() (keys []string) {
 	for _, track := range sm.Tracks.Hits {
@@ -57,9 +34,26 @@ func (sm *ReponseShazamSearchTerm) GetKeys() (keys []string) {
 	return keys
 }
 
+
+// search key
+
 func (sl *ResponseShazamSearchKey) GetLyrics() (lyrics string) {	
 	if len(sl.Sections) > 1 {
 		lyrics = strings.Join(sl.Sections[1].Text, "\n")
 	}
 	return lyrics
 }
+
+func (sl *ResponseShazamSearchKey) GetArtists() (artists string) {
+	if len(sl.Artists) > 1 {
+		for i, artist := range sl.Artists {
+			if i == 0 {
+				artists = artist.Alias
+			} else {
+				artists += ", " + artist.Alias
+			}
+		}
+	}
+	return artists
+}
+
