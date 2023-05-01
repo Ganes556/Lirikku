@@ -17,9 +17,6 @@ type ReponseShazamSearchTerm struct {
 type ResponseShazamSearchKey struct {
 	Title    string `json:"title"`
 	Subtitle string `json:"subtitle"`
-	Artists []struct {
-		Alias  string `json:"alias"`
-	} `json:"artists"`
 	Sections []struct {
 		Text []string `json:"text,omitempty"`
 	} `json:"sections"`
@@ -44,16 +41,10 @@ func (sl *ResponseShazamSearchKey) GetLyrics() (lyrics string) {
 	return lyrics
 }
 
-func (sl *ResponseShazamSearchKey) GetArtists() (artists string) {
-	if len(sl.Artists) > 1 {
-		for i, artist := range sl.Artists {
-			if i == 0 {
-				artists = artist.Alias
-			} else {
-				artists += ", " + artist.Alias
-			}
-		}
-	}
-	return artists
-}
 
+func (sl *ResponseShazamSearchKey) GetResponsePublicSongLyric() (res ResponsePublicSongLyric) {
+	res.Title = sl.Title
+	res.ArtistNames = sl.Subtitle
+	res.Lyric = sl.GetLyrics()
+	return res
+}
