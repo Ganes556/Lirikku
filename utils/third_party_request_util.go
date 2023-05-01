@@ -5,18 +5,24 @@ import (
 	"net/http"
 	"net/url"
 	"os"
+	"strings"
 	"time"
 
 	"github.com/Lirikku/models"
 )
 
-func request(uri string, param string, timeout int) (*http.Response, error){
+func request(method, url, param, body string, timeout int) (*http.Response, error){
 
 	client := &http.Client{
 		Timeout: time.Duration(timeout) * time.Second,
 	}
+	var req *http.Request
 
-	req, _ := http.NewRequest("GET", uri + "?" + param, nil)
+	if method == "POST" {
+		req, _ = http.NewRequest("POST", url, strings.NewReader(body))
+	}else {
+		req, _ = http.NewRequest("GET", url + "?" + param, nil)
+	}
 
 	res, err := client.Do(req)
 
@@ -31,12 +37,12 @@ func RequestShazamSearchTerm(term, offset, types, limit string) (models.ReponseS
 
 	baseShazamSearchTerm := "https://" + os.Getenv("SHAZAM_API_HOST") + "/services/search/v4/id/ID/web/search"
 
-	res, err := request(baseShazamSearchTerm, url.Values{
+	res, err := request("GET",baseShazamSearchTerm, url.Values{
 		"term": {term},
 		"offset": {offset},
 		"types": {types},
 		"limit": {limit},
-	}.Encode(), 10)
+	}.Encode(),"", 10)
 
 	if err != nil {
 		return models.ReponseShazamSearchTerm{}, err
@@ -55,7 +61,7 @@ func RequestShazamSearchTerm(term, offset, types, limit string) (models.ReponseS
 func RequestShazamSearchKey(key string) (models.ResponseShazamSearchKey, error) {
 	urlShazamSearchKey := "https://" + os.Getenv("SHAZAM_API_HOST") + "/discovery/v5/id/ID/web/-/track/" + key		
 	
-	res, _ := request(urlShazamSearchKey, url.Values{}.Encode(), 10)
+	res, _ := request("GET", urlShazamSearchKey, url.Values{}.Encode(),"", 10)
 
 	defer res.Body.Close()
 
