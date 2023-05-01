@@ -46,13 +46,7 @@ func SearchTermSongLyrics(c echo.Context) error {
 				return
 			}
 			
-			resPublicSongLyrics[i].Title = res.Title
-			resPublicSongLyrics[i].ArtistNames = res.Subtitle
-			
-			lyric := res.GetLyrics()
-			
-			resPublicSongLyrics[i].Lyric = lyric
-			
+			resPublicSongLyrics[i] = res.GetInResponsePublicSongLyric()
 			
 		}(i, key)
 
