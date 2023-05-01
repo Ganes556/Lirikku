@@ -2,9 +2,11 @@ package utils
 
 import (
 	"encoding/json"
+	"fmt"
 	"net/http"
 	"net/url"
 	"os"
+	"strings"
 	"time"
 
 	"github.com/Lirikku/models"
@@ -75,4 +77,37 @@ func RequestShazamSearchKey(key string) (models.ResponseShazamSearchKey, error) 
 	json.NewDecoder(res.Body).Decode(&resData)
 
 	return resData, nil
+}
+
+func RequestShazamSearchAudio(rawBase64 string) (string, error) {
+	
+	urlShazamSearchAudio := "https://" + os.Getenv("RAPID_SHAZAM_API_HOST") + "/songs/v2/detect"
+	
+	client := &http.Client{
+		Timeout: time.Duration(10) * time.Second,
+	}
+	
+	req, err := http.NewRequest("POST", urlShazamSearchAudio, strings.NewReader(rawBase64))
+	req.Header.Add("content-type", "text/plain")
+	req.Header.Add("X-RapidAPI-Key", os.Getenv("RAPID_SHAZAM_API_KEY"))
+
+	if err != nil {
+		fmt.Println(err)
+		return "", err
+	}
+	
+	res, err := client.Do(req)
+
+	if err != nil {
+		fmt.Println(err)
+		return "", err
+	}
+	
+	defer res.Body.Close()
+
+	var resData models.ResponseRapidShazamSearchAudio
+
+	json.NewDecoder(res.Body).Decode(&resData)
+	
+	return resData.Track.Key, nil
 }
