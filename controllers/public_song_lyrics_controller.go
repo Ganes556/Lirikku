@@ -96,7 +96,7 @@ func SearchAudioSongLyrics(c echo.Context) error {
 		return err
 	}
 
-	key, err := utils.RequestShazamSearchAudio(rawBases64)
+	resData, err := utils.RequestShazamSearchAudio(rawBases64)
 
 	if err != nil {
 		return echo.NewHTTPError(http.StatusInternalServerError, echo.Map{
@@ -104,21 +104,13 @@ func SearchAudioSongLyrics(c echo.Context) error {
 		})
 	}
 
-	if key == "" {
+	if resData.Track.Key == "" {
 		return c.JSON(http.StatusNotFound, echo.Map{
 			"message": "song not found",
 		})
 	}
 
-	res, err := utils.RequestShazamSearchKey(key)
-
-	if err != nil {
-		return echo.NewHTTPError(http.StatusInternalServerError, echo.Map{
-			"message": "failed to get data",
-		})
-	}
-
 	return c.JSON(http.StatusOK, echo.Map{
-		"public_song_lyrics": res.GetInResponsePublicSongLyric(),
+		"public_song_lyrics": resData.GetInResponsePublicSongLyric(),
 	})
 }
