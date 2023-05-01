@@ -79,7 +79,7 @@ func RequestShazamSearchKey(key string) (models.ResponseShazamSearchKey, error) 
 	return resData, nil
 }
 
-func RequestShazamSearchAudio(rawBase64 string) (string, error) {
+func RequestShazamSearchAudio(rawBase64 string) (models.ResponseRapidShazamSearchAudio, error) {
 	
 	urlShazamSearchAudio := "https://" + os.Getenv("RAPID_SHAZAM_API_HOST") + "/songs/v2/detect"
 	
@@ -93,14 +93,14 @@ func RequestShazamSearchAudio(rawBase64 string) (string, error) {
 
 	if err != nil {
 		fmt.Println(err)
-		return "", err
+		return models.ResponseRapidShazamSearchAudio{}, err
 	}
 	
 	res, err := client.Do(req)
 
 	if err != nil {
 		fmt.Println(err)
-		return "", err
+		return models.ResponseRapidShazamSearchAudio{}, err
 	}
 	
 	defer res.Body.Close()
@@ -109,5 +109,5 @@ func RequestShazamSearchAudio(rawBase64 string) (string, error) {
 
 	json.NewDecoder(res.Body).Decode(&resData)
 	
-	return resData.Track.Key, nil
+	return resData, nil
 }
