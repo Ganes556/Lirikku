@@ -24,7 +24,8 @@ type ResponseShazamSearchKey struct {
 
 // search term
 
-func (sm *ReponseShazamSearchTerm) GetKeys() (keys []string) {
+func (sm *ReponseShazamSearchTerm) GetKeys() []string {
+	var keys []string
 	for _, track := range sm.Tracks.Hits {
 		keys = append(keys, track.Track.Key)
 	}
@@ -34,17 +35,19 @@ func (sm *ReponseShazamSearchTerm) GetKeys() (keys []string) {
 
 // search key
 
-func (sl *ResponseShazamSearchKey) GetLyrics() (lyrics string) {	
-	if len(sl.Sections) > 1 {
-		lyrics = strings.Join(sl.Sections[1].Text, "\n")
+func (sk *ResponseShazamSearchKey) GetLyrics() string {	
+	var lyrics string
+	if len(sk.Sections) > 1 {
+		lyrics = strings.Join(sk.Sections[1].Text, "\n")
 	}
 	return lyrics
 }
 
 
-func (sl *ResponseShazamSearchKey) GetInResponsePublicSongLyric() (res ResponsePublicSongLyric) {
-	res.Title = sl.Title
-	res.ArtistNames = sl.Subtitle
-	res.Lyric = sl.GetLyrics()
+func (sk *ResponseShazamSearchKey) GetInResponsePublicSongLyric() ResponsePublicSongLyric {
+	var res ResponsePublicSongLyric
+	res.Title = sk.Title
+	res.ArtistNames = sk.Subtitle
+	res.Lyric = sk.GetLyrics()
 	return res
 }
