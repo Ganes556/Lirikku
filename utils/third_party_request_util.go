@@ -5,44 +5,35 @@ import (
 	"net/http"
 	"net/url"
 	"os"
-	"strings"
 	"time"
 
 	"github.com/Lirikku/models"
 )
 
-func request(method, url, param, body string, timeout int) (*http.Response, error){
-
-	client := &http.Client{
-		Timeout: time.Duration(timeout) * time.Second,
-	}
-	var req *http.Request
-
-	if method == "POST" {
-		req, _ = http.NewRequest("POST", url, strings.NewReader(body))
-	}else {
-		req, _ = http.NewRequest("GET", url + "?" + param, nil)
-	}
-
-	res, err := client.Do(req)
-
-	if err != nil {
-		return nil, err
-	}
-
-	return res, nil
-}
 
 func RequestShazamSearchTerm(term, offset, types, limit string) (models.ReponseShazamSearchTerm, error) {
 
-	baseShazamSearchTerm := "https://" + os.Getenv("SHAZAM_API_HOST") + "/services/search/v4/id/ID/web/search"
+	urlShazamSearchKey := "https://" + os.Getenv("SHAZAM_API_HOST") + "/services/search/v4/id/ID/web/search"
 
-	res, err := request("GET",baseShazamSearchTerm, url.Values{
+	client := &http.Client{
+		Timeout: time.Duration(10) * time.Second,
+	}
+
+	query := url.Values{
 		"term": {term},
 		"offset": {offset},
 		"types": {types},
 		"limit": {limit},
-	}.Encode(),"", 10)
+	}.Encode()
+
+	req, err := http.NewRequest("GET", urlShazamSearchKey+"?"+query, nil)
+
+	if err != nil {
+		return models.ReponseShazamSearchTerm{}, err
+	}
+
+	res, err := client.Do(req)
+
 
 	if err != nil {
 		return models.ReponseShazamSearchTerm{}, err
@@ -61,7 +52,21 @@ func RequestShazamSearchTerm(term, offset, types, limit string) (models.ReponseS
 func RequestShazamSearchKey(key string) (models.ResponseShazamSearchKey, error) {
 	urlShazamSearchKey := "https://" + os.Getenv("SHAZAM_API_HOST") + "/discovery/v5/id/ID/web/-/track/" + key		
 	
-	res, _ := request("GET", urlShazamSearchKey, url.Values{}.Encode(),"", 10)
+	client := &http.Client{
+		Timeout: time.Duration(10) * time.Second,
+	}
+	
+	req, err := http.NewRequest("GET", urlShazamSearchKey, nil)
+
+	if err != nil {
+		return models.ResponseShazamSearchKey{}, err
+	}
+
+	res, err := client.Do(req)
+
+	if err != nil {
+		return models.ResponseShazamSearchKey{}, err
+	}
 
 	defer res.Body.Close()
 
