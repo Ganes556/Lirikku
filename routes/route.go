@@ -35,6 +35,12 @@ func NewRoute() *echo.Echo{
 			mySongLyricsGroup.PUT("/:id", controllers.UpdateMySongLyric)
 		}  
 
+		// public song lyrics
+		publicSongLyricsGroup := songLyricsGroup.Group("/public")
+		{
+			publicSongLyricsGroup.GET("/search", controllers.SearchTermSongLyrics)			
+		}
+
 	}
 
 	return e
