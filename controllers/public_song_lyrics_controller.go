@@ -22,17 +22,15 @@ func SearchTermSongLyrics(c echo.Context) error {
 		})
 	}
 
-	shazamMetadata, err := utils.RequestShazamMetadata(term, strconv.Itoa(offsetInt), "artists,songs", "5")
+	res, err := utils.RequestShazamSearchTerm(term, strconv.Itoa(offsetInt), "artists,songs", "5")
 	
 	if err != nil {
-		return echo.NewHTTPError(http.StatusBadRequest, echo.Map{
+		return echo.NewHTTPError(http.StatusInternalServerError, echo.Map{
 			"message": "failed to get data",
 		})
 	}
 
-	keys := shazamMetadata.GetKeys()
-	titles := shazamMetadata.GetTitles()
-	artists := shazamMetadata.GetArtists()
+	keys := res.GetKeys()
 	
 	var resPublicSongLyrics = make([]models.ResponsePublicSongLyric, len(keys))
 
@@ -42,21 +40,16 @@ func SearchTermSongLyrics(c echo.Context) error {
 		go func (i int, key string) {
 			defer wg.Done()
 
-			shazamLyric, err := utils.RequestShazamLyric(key)
+			res, err := utils.RequestShazamSearchKey(key)
 			
 			if err != nil {
 				return
 			}
-
-			if i < len(titles) {
-				resPublicSongLyrics[i].Title = titles[i]
-			}
-
-			if i < len(artists) {
-				resPublicSongLyrics[i].ArtistNames = artists[i]
-			}
 			
-			lyric := shazamLyric.GetLyrics()
+			resPublicSongLyrics[i].Title = res.Title
+			resPublicSongLyrics[i].ArtistNames = res.Subtitle
+			
+			lyric := res.GetLyrics()
 			
 			resPublicSongLyrics[i].Lyric = lyric
 			
@@ -78,6 +71,6 @@ func SearchTermSongLyrics(c echo.Context) error {
 
 }
 
-func SearchAudioSongLyric(c echo.Context) error {
+func SearchAudioSongLyrics(c echo.Context) error {
 	return nil
 }
