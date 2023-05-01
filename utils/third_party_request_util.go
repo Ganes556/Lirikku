@@ -27,11 +27,11 @@ func request(uri string, param string, timeout int) (*http.Response, error){
 	return res, nil
 }
 
-func RequestShazamMetadata(term, offset, types, limit string) (models.ShazamMetadata, error) {
+func RequestShazamSearchTerm(term, offset, types, limit string) (models.ReponseShazamSearchTerm, error) {
 
-	baseShazamMetadata := "https://" + os.Getenv("SHAZAM_API_HOST") + "/services/search/v4/id/ID/web/search"
+	baseShazamSearchTerm := "https://" + os.Getenv("SHAZAM_API_HOST") + "/services/search/v4/id/ID/web/search"
 
-	res, err := request(baseShazamMetadata, url.Values{
+	res, err := request(baseShazamSearchTerm, url.Values{
 		"term": {term},
 		"offset": {offset},
 		"types": {types},
@@ -39,29 +39,29 @@ func RequestShazamMetadata(term, offset, types, limit string) (models.ShazamMeta
 	}.Encode(), 10)
 
 	if err != nil {
-		return models.ShazamMetadata{}, err
+		return models.ReponseShazamSearchTerm{}, err
 	}
 
 	defer res.Body.Close()
 
-	var shazamMetadata models.ShazamMetadata
+	var resData models.ReponseShazamSearchTerm
 
-	json.NewDecoder(res.Body).Decode(&shazamMetadata)
+	json.NewDecoder(res.Body).Decode(&resData)
 
-	return shazamMetadata, nil
+	return resData, nil
 
 }
 
-func RequestShazamLyric(key string) (models.ShazamLyric, error) {
-	uriShazamLyric := "https://" + os.Getenv("SHAZAM_API_HOST") + "/discovery/v5/id/ID/web/-/track/" + key		
+func RequestShazamSearchKey(key string) (models.ResponseShazamSearchKey, error) {
+	urlShazamSearchKey := "https://" + os.Getenv("SHAZAM_API_HOST") + "/discovery/v5/id/ID/web/-/track/" + key		
 	
-	res, _ := request(uriShazamLyric, url.Values{}.Encode(), 10)
+	res, _ := request(urlShazamSearchKey, url.Values{}.Encode(), 10)
 
 	defer res.Body.Close()
 
-	var shazamLyric models.ShazamLyric
+	var resData models.ResponseShazamSearchKey
 
-	json.NewDecoder(res.Body).Decode(&shazamLyric)
+	json.NewDecoder(res.Body).Decode(&resData)
 
-	return shazamLyric, nil
+	return resData, nil
 }
