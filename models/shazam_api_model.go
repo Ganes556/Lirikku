@@ -4,7 +4,7 @@ import (
 	"strings"
 )
 
-type ReponseShazamSearchTerm struct {
+type ShazamSearchTermResponse struct {
 	Tracks struct {
 		Hits []struct {
 			Track struct {
@@ -14,7 +14,7 @@ type ReponseShazamSearchTerm struct {
 	} `json:"tracks"`
 }
 
-type ResponseShazamSearchKey struct {
+type ShazamSearchKeyResponse struct {
 	Title    string `json:"title"`
 	Subtitle string `json:"subtitle"`
 	Sections []struct {
@@ -24,7 +24,7 @@ type ResponseShazamSearchKey struct {
 
 // search term
 
-func (sm *ReponseShazamSearchTerm) GetKeys() []string {
+func (sm *ShazamSearchTermResponse) GetKeys() []string {
 	var keys []string
 	for _, track := range sm.Tracks.Hits {
 		keys = append(keys, track.Track.Key)
@@ -35,7 +35,7 @@ func (sm *ReponseShazamSearchTerm) GetKeys() []string {
 
 // search key
 
-func (sk *ResponseShazamSearchKey) GetLyrics() string {	
+func (sk *ShazamSearchKeyResponse) GetLyrics() string {	
 	var lyrics string
 	if len(sk.Sections) > 1 {
 		lyrics = strings.Join(sk.Sections[1].Text, "\n")
@@ -44,8 +44,8 @@ func (sk *ResponseShazamSearchKey) GetLyrics() string {
 }
 
 
-func (sk *ResponseShazamSearchKey) GetInResponsePublicSongLyric() ResponsePublicSongLyric {
-	var res ResponsePublicSongLyric
+func (sk *ShazamSearchKeyResponse) GetInPublicSongLyricResponse() PublicSongLyricResponse {
+	var res PublicSongLyricResponse
 	res.Title = sk.Title
 	res.ArtistNames = sk.Subtitle
 	res.Lyric = sk.GetLyrics()
