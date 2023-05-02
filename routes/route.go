@@ -11,6 +11,8 @@ import (
 func NewRoute() *echo.Echo{
 	e := echo.New()
 
+	e.Validator = middlewares.NewValidatorMiddleware()
+
 	e.Pre(middleware.RemoveTrailingSlash())
 
 	// auth
