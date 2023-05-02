@@ -32,7 +32,7 @@ func SearchTermSongLyrics(c echo.Context) error {
 
 	keys := res.GetKeys()
 	
-	var resPublicSongLyrics = make([]models.ResponsePublicSongLyric, len(keys))
+	var resPublicSongLyrics = make([]models.PublicSongLyricResponse, len(keys))
 
 	var wg sync.WaitGroup
 	for i, key := range keys {
@@ -46,7 +46,7 @@ func SearchTermSongLyrics(c echo.Context) error {
 				return
 			}
 			
-			resPublicSongLyrics[i] = res.GetInResponsePublicSongLyric()
+			resPublicSongLyrics[i] = res.GetInPublicSongLyricResponse()
 			
 		}(i, key)
 
@@ -111,6 +111,6 @@ func SearchAudioSongLyrics(c echo.Context) error {
 	}
 
 	return c.JSON(http.StatusOK, echo.Map{
-		"public_song_lyrics": resData.GetInResponsePublicSongLyric(),
+		"public_song_lyrics": resData.GetInPublicSongLyricResponse(),
 	})
 }

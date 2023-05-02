@@ -24,7 +24,7 @@ type SongLyricResponse struct {
 	Lyric   string   `json:"lyric"`
 }
 
-type ResponsePublicSongLyric struct {
+type PublicSongLyricResponse struct {
 	ArtistNames string `json:"artist_names"`
 	Title   string   `json:"title"`
 	Lyric   string   `json:"lyric"`
