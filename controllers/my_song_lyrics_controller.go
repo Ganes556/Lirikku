@@ -25,7 +25,7 @@ func GetMySongLyrics(c echo.Context) error {
 		})
 	}
 
-	var resSongLyrics []models.ResponseSongLyric
+	var resSongLyrics []models.SongLyricResponse
 	
 	// load all song lyrics with artist
 	configs.DB.Model(&models.SongLyric{}).Limit(5).Offset(offsetInt).Find(&resSongLyrics, "user_id = ?", user.ID)
@@ -43,7 +43,7 @@ func GetMySongLyrics(c echo.Context) error {
 func GetMySongLyric(c echo.Context) error {
 
 	user := c.Get("user").(models.UserJWTDecode)
-	var resSongLyric models.ResponseSongLyric
+	var resSongLyric models.SongLyricResponse
 	
 	idSongLyric := c.Param("id")
 
@@ -73,13 +73,13 @@ func SaveMySongLyric(c echo.Context) error {
 
 	user := c.Get("user").(models.UserJWTDecode)
 	
-	var newSongLyric models.SongLyric
+	var newSongLyric models.SongLyricWrite
 
 	c.Bind(&newSongLyric)
 
 	newSongLyric.UserID = user.ID
 
-	err := configs.DB.Create(&newSongLyric).Error
+	err := configs.DB.Model(&models.SongLyricWrite{}).Create(&newSongLyric).Error
 
 	if err != nil {
 		return err
@@ -105,7 +105,7 @@ func SearchMySongLyric(c echo.Context) error {
 		})
 	}
 	
-	var resSongLyrics []models.ResponseSongLyric
+	var resSongLyrics []models.SongLyricResponse
 	
 	title := c.QueryParam("title")
 	lyric := c.QueryParam("lyric")
@@ -184,13 +184,13 @@ func UpdateMySongLyric(c echo.Context) error {
 		})
 	}
 
-	var updateSongLyric models.SongLyric
+	var updateSongLyric models.SongLyricWrite
 
 	c.Bind(&updateSongLyric)
 
 	updateSongLyric.UserID = user.ID
 
-	err = configs.DB.Where("id = ?", idSongLyric).Updates(&updateSongLyric).Error
+	err = configs.DB.Model(&models.SongLyricWrite{}).Where("id = ?", idSongLyric).Updates(&updateSongLyric).Error
 
 	if err != nil {
 		return err

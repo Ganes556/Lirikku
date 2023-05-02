@@ -10,7 +10,14 @@ type SongLyric struct {
 	Lyric   string    `json:"lyric"`
 }
 
-type ResponseSongLyric struct {
+type SongLyricWrite struct {
+	UserID 		uint     `json:",omitempty"`
+	ArtistNames string `json:"artist_names"`
+	Title   string   `json:"title"`
+	Lyric   string   `json:"lyric"`
+}
+
+type SongLyricResponse struct {
 	ID 		uint     `json:"id"`
 	ArtistNames string `json:"artist_names"`
 	Title   string   `json:"title"`
