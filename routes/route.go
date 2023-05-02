@@ -39,7 +39,7 @@ func NewRoute() *echo.Echo{
 		publicSongLyricsGroup := songLyricsGroup.Group("/public")
 		{
 			publicSongLyricsGroup.GET("/search", controllers.SearchTermSongLyrics)			
-			publicSongLyricsGroup.POST("/search/audio", controllers.SearchAudioSongLyrics)
+			publicSongLyricsGroup.POST("/search/audio", controllers.SearchAudioSongLyric)
 		}
 
 	}
