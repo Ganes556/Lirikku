@@ -14,6 +14,12 @@ func Register(c echo.Context) error {
 
 	c.Bind(&reqAuth)
 
+	if err := c.Validate(&reqAuth); err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, echo.Map{
+			"message": err.Error(),
+		})
+	}
+
 	err := configs.DB.First(&models.User{},"email = ?", reqAuth.Email).Error
 	
 	if err == nil {
@@ -44,6 +50,13 @@ func Login(c echo.Context) error {
 	reqAuth := models.UserLogin{}
 
 	c.Bind(&reqAuth)
+	
+	if err := c.Validate(&reqAuth); err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, echo.Map{
+			"message": err.Error(),
+		})
+	}
+
 
 	user := models.User{}
 
