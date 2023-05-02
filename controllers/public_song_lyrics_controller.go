@@ -65,9 +65,9 @@ func SearchTermSongLyrics(c echo.Context) error {
 
 }
 
-func SearchAudioSongLyrics(c echo.Context) error {
+func SearchAudioSongLyric(c echo.Context) error {
 	audioData, err := c.FormFile("audio")
-	
+
 	if err != nil {
 		return err
 	}
@@ -103,7 +103,7 @@ func SearchAudioSongLyrics(c echo.Context) error {
 			"message": "failed to get data",
 		})
 	}
-
+	
 	if resData.Track.Key == "" {
 		return c.JSON(http.StatusNotFound, echo.Map{
 			"message": "song not found",
