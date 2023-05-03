@@ -73,13 +73,17 @@ func SaveMySongLyric(c echo.Context) error {
 
 	user := c.Get("user").(models.UserJWTDecode)
 	
-	var newSongLyric models.SongLyricWrite
+	var reqSongLyricWrite models.SongLyricWrite
 
-	c.Bind(&newSongLyric)
+	c.Bind(&reqSongLyricWrite)
 
-	newSongLyric.UserID = user.ID
+	newSongLyric := models.SongLyric{
+		UserID: user.ID,
+		Title: reqSongLyricWrite.Title,
+		Lyric: reqSongLyricWrite.Lyric,
+	}
 
-	err := configs.DB.Model(&models.SongLyricWrite{}).Create(&newSongLyric).Error
+	err := configs.DB.Model(&models.SongLyric{}).Create(&newSongLyric).Error
 
 	if err != nil {
 		return err
@@ -184,13 +188,17 @@ func UpdateMySongLyric(c echo.Context) error {
 		})
 	}
 
-	var updateSongLyric models.SongLyricWrite
+	var reqSongLyricWrite models.SongLyricWrite
 
-	c.Bind(&updateSongLyric)
+	c.Bind(&reqSongLyricWrite)
 
-	updateSongLyric.UserID = user.ID
+	updateSongLyric := models.SongLyric{
+		UserID: user.ID,
+		Title: reqSongLyricWrite.Title,
+		Lyric: reqSongLyricWrite.Lyric,
+	}
 
-	err = configs.DB.Model(&models.SongLyricWrite{}).Where("id = ?", idSongLyric).Updates(&updateSongLyric).Error
+	err = configs.DB.Model(&models.SongLyric{}).Where("id = ?", idSongLyric).Updates(&updateSongLyric).Error
 
 	if err != nil {
 		return err
