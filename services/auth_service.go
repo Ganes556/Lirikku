@@ -1,12 +1,14 @@
 package services
 
 import (
+	"errors"
+
 	"github.com/Lirikku/configs"
 	"github.com/Lirikku/models"
 )
 
 type IAuthService interface {
-	GetUserByEmail(email string) error
+	CheckUserEmail(email string) error
 	CreateUser(req models.UserRegister) error
 }
 
@@ -27,11 +29,11 @@ func SetAuthRepo(repo IAuthService) {
 	authRepo = repo
 }
 
-func (ar *AuthRepo) GetUserByEmail(email string) error {
+func (ar *AuthRepo) CheckUserEmail(email string) error {
+
 	err := configs.DB.First(&models.User{}, "email = ?", email).Error
-	
-	if err != nil {
-		return err
+	if err == nil {
+		return errors.New("email already registered")
 	}
 
 	return nil
