@@ -7,15 +7,15 @@ import (
 	"github.com/go-playground/validator"
 )
 
-type ValidatorMiddleware struct {
+type Validator struct {
 	Validator *validator.Validate
 }
 
-func NewValidatorMiddleware() *ValidatorMiddleware {
-	return &ValidatorMiddleware{Validator: validator.New()}
+func NewValidator() *Validator {
+	return &Validator{Validator: validator.New()}
 }
 
-func (v *ValidatorMiddleware) Validate(i interface{}) error {	
+func (v *Validator) Validate(i interface{}) error {	
 	if err := v.Validator.Struct(i); err != nil {
 		for _, err := range err.(validator.ValidationErrors) {
 			field := strings.ToLower(err.Field())
