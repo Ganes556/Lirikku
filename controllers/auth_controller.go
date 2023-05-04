@@ -5,10 +5,19 @@ import (
 
 	"github.com/Lirikku/configs"
 	"github.com/Lirikku/models"
+	"github.com/Lirikku/services"
 	"github.com/labstack/echo/v4"
 )
 
-func Register(c echo.Context) error {
+type Auth struct {
+	service services.IAuthService
+}
+
+func NewAuthController(service services.IAuthService) *Auth {
+	return &Auth{service}
+}
+
+func (a *Auth) Register(c echo.Context) error {
 	
 	reqAuth := models.UserRegister{}
 
@@ -20,7 +29,7 @@ func Register(c echo.Context) error {
 		})
 	}
 
-	err := configs.DB.First(&models.User{},"email = ?", reqAuth.Email).Error
+	err := a.service.GetUserByEmail(reqAuth.Email)
 	
 	if err == nil {
 		return echo.NewHTTPError(http.StatusBadRequest, echo.Map{
@@ -28,24 +37,14 @@ func Register(c echo.Context) error {
 		})
 	}
 
-	newUser := models.User{
-		Name: reqAuth.Name,
-		Email: reqAuth.Email,
-		Password: reqAuth.Password,
-	}
-
-	if err := configs.DB.Create(&newUser).Error; err != nil {
-		return echo.NewHTTPError(http.StatusBadRequest, echo.Map{
-			"message": "failed to create user",
-		})
-	}
+	a.service.CreateUser(reqAuth)
 	
 	return c.JSON(http.StatusCreated, echo.Map{
 		"message": "success created user",
 	})
 }
 
-func Login(c echo.Context) error {
+func (a *Auth) Login(c echo.Context) error {
 	
 	reqAuth := models.UserLogin{}
 

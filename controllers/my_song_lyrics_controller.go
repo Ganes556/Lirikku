@@ -5,13 +5,21 @@ import (
 	"net/url"
 	"strconv"
 
-	"github.com/Lirikku/configs"
 	"github.com/Lirikku/models"
+	"github.com/Lirikku/services"
 	"github.com/Lirikku/utils"
 	"github.com/labstack/echo/v4"
 )
 
-func GetMySongLyrics(c echo.Context) error {
+type MySongLyrics struct {
+	service services.IMySongLyricsService
+}
+
+func NewMySongLyricsController(service services.IMySongLyricsService) *MySongLyrics {
+	return &MySongLyrics{service}
+}
+
+func (my *MySongLyrics) GetAll(c echo.Context) error {
 
 	user := c.Get("user").(models.UserJWTDecode)
 
@@ -25,10 +33,13 @@ func GetMySongLyrics(c echo.Context) error {
 		})
 	}
 
-	var resSongLyrics []models.SongLyricResponse
-	
-	// load all song lyrics with artist
-	configs.DB.Model(&models.SongLyric{}).Limit(5).Offset(offsetInt).Find(&resSongLyrics, "user_id = ?", user.ID)
+	resSongLyrics, err := my.service.GetMySongLyrics(user.ID,offsetInt)
+
+	if err != nil {
+		return echo.NewHTTPError(http.StatusInternalServerError, echo.Map{
+			"message": "failed to get data",
+		})
+	}
 	
 	next := utils.GenerateNextLink(c, len(resSongLyrics), url.Values{
 		"offset": {strconv.Itoa(offsetInt + 5)},
@@ -40,23 +51,21 @@ func GetMySongLyrics(c echo.Context) error {
 	})
 }
 
-func GetMySongLyric(c echo.Context) error {
+func (my *MySongLyrics) Get(c echo.Context) error {
 
 	user := c.Get("user").(models.UserJWTDecode)
-	var resSongLyric models.SongLyricResponse
 	
 	idSongLyric := c.Param("id")
-
+	
 	idSongLyricInt, err := utils.CheckId(idSongLyric)
-
+	
 	if err != nil {
 		return echo.NewHTTPError(http.StatusBadRequest, echo.Map{
 			"message": "id must be a number",
 		})
 	}
 
-	// load song lyrics with artist by id song lyrics
-	err = configs.DB.Model(&models.SongLyric{}).First(&resSongLyric, "id = ? AND user_id = ?", idSongLyricInt ,user.ID).Error
+	resSongLyric, err := my.service.GetMySongLyric(idSongLyricInt, user.ID)
 	
 	if err != nil {
 		return echo.NewHTTPError(http.StatusBadRequest, echo.Map{
@@ -69,7 +78,7 @@ func GetMySongLyric(c echo.Context) error {
 	})
 }
 
-func SaveMySongLyric(c echo.Context) error {
+func (my *MySongLyrics) Save(c echo.Context) error {
 
 	user := c.Get("user").(models.UserJWTDecode)
 	
@@ -77,17 +86,7 @@ func SaveMySongLyric(c echo.Context) error {
 
 	c.Bind(&reqSongLyricWrite)
 
-	newSongLyric := models.SongLyric{
-		UserID: user.ID,
-		Title: reqSongLyricWrite.Title,
-		Lyric: reqSongLyricWrite.Lyric,
-	}
-
-	err := configs.DB.Model(&models.SongLyric{}).Create(&newSongLyric).Error
-
-	if err != nil {
-		return err
-	}
+	my.service.SaveMySongLyric(user.ID, reqSongLyricWrite)
 
 	return c.JSON(http.StatusCreated, echo.Map{
 		"message": "song lyric saved successfully",
@@ -95,7 +94,7 @@ func SaveMySongLyric(c echo.Context) error {
 	
 }
 
-func SearchMySongLyric(c echo.Context) error {
+func (my *MySongLyrics) Search(c echo.Context) error {
 
 	user := c.Get("user").(models.UserJWTDecode)
 	
@@ -109,13 +108,12 @@ func SearchMySongLyric(c echo.Context) error {
 		})
 	}
 	
-	var resSongLyrics []models.SongLyricResponse
 	
 	title := c.QueryParam("title")
 	lyric := c.QueryParam("lyric")
 	artist_names:= c.QueryParam("artist_names")
-	
-	configs.DB.Model(&models.SongLyric{}).Where("user_id = ? AND title LIKE ? AND lyric LIKE ? AND artist_names LIKE ?", user.ID, "%"+title+"%", "%"+lyric+"%", "%"+artist_names+"%").Limit(5).Offset(offsetInt).Find(&resSongLyrics)
+
+	resSongLyrics, _ := my.service.SearchMySongLyrics(user.ID, title, lyric, artist_names, offsetInt)
 
 	next := utils.GenerateNextLink(c, len(resSongLyrics), url.Values{
 		"title": {title},
@@ -130,7 +128,7 @@ func SearchMySongLyric(c echo.Context) error {
 	})
 }
 
-func DeleteMySongLyric(c echo.Context) error {
+func (my *MySongLyrics) Delete(c echo.Context) error {
 
 	user := c.Get("user").(models.UserJWTDecode)
 	
@@ -144,9 +142,7 @@ func DeleteMySongLyric(c echo.Context) error {
 		})
 	}
 
-	querySongLyric := models.SongLyric{}
-
-	err = configs.DB.First(&querySongLyric, "id = ? AND user_id = ?", idSongLyricInt, user.ID).Error
+	_, err = my.service.GetMySongLyric(idSongLyricInt, user.ID)
 	
 	if err != nil {
 		return echo.NewHTTPError(http.StatusBadRequest, echo.Map{
@@ -154,11 +150,7 @@ func DeleteMySongLyric(c echo.Context) error {
 		})
 	}
 
-	err = configs.DB.Unscoped().Delete(&querySongLyric).Error	
-
-	if err != nil {
-		return err
-	}
+	my.service.DeleteMySongLyric(idSongLyricInt, user.ID)
 		
 	return c.JSON(http.StatusOK, echo.Map{
 		"message": "song lyric deleted successfully",
@@ -166,7 +158,7 @@ func DeleteMySongLyric(c echo.Context) error {
 
 }
 
-func UpdateMySongLyric(c echo.Context) error {
+func (my *MySongLyrics) Update(c echo.Context) error {
 
 	user := c.Get("user").(models.UserJWTDecode)
 	
@@ -180,8 +172,8 @@ func UpdateMySongLyric(c echo.Context) error {
 		})
 	}
 	
-	err = configs.DB.First(&models.SongLyric{}, "id = ? AND user_id = ?", idSongLyricInt, user.ID).Error
-	
+	_, err = my.service.GetMySongLyric(idSongLyricInt, user.ID)
+
 	if err != nil {
 		return echo.NewHTTPError(http.StatusBadRequest, echo.Map{
 			"message": "song lyric not found",
@@ -192,17 +184,7 @@ func UpdateMySongLyric(c echo.Context) error {
 
 	c.Bind(&reqSongLyricWrite)
 
-	updateSongLyric := models.SongLyric{
-		UserID: user.ID,
-		Title: reqSongLyricWrite.Title,
-		Lyric: reqSongLyricWrite.Lyric,
-	}
-
-	err = configs.DB.Model(&models.SongLyric{}).Where("id = ?", idSongLyric).Updates(&updateSongLyric).Error
-
-	if err != nil {
-		return err
-	}
+	my.service.UpdateMySongLyric(idSongLyricInt, user.ID, reqSongLyricWrite)
 
 	return c.JSON(http.StatusOK, echo.Map{
 		"message": "song lyric updated successfully",
