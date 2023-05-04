@@ -12,7 +12,7 @@ import (
 	"github.com/labstack/echo/v4"
 )
 
-func JwtMiddleware() echo.MiddlewareFunc {
+func JWT() echo.MiddlewareFunc {
 	return echojwt.WithConfig(echojwt.Config{
 		SigningKey: []byte(os.Getenv("JWT_SECRET")),
 		NewClaimsFunc: func(c echo.Context) jwt.Claims {

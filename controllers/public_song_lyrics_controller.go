@@ -4,13 +4,21 @@ import (
 	"net/http"
 	"net/url"
 	"strconv"
-	"sync"
 
-	"github.com/Lirikku/models"
+	"github.com/Lirikku/services"
 	"github.com/Lirikku/utils"
 	"github.com/labstack/echo/v4"
 )
-func SearchTermSongLyrics(c echo.Context) error {
+
+type PublicSongLyrics struct {
+	service services.IPublicSongLyricsService
+}
+
+func NewPublicSongLyricsController(service services.IPublicSongLyricsService) *PublicSongLyrics {
+	return &PublicSongLyrics{service}
+}
+
+func (pub *PublicSongLyrics) SearchTerm(c echo.Context) error {
 	term := c.QueryParam("term")
 	offset := c.QueryParam("offset")
 	
@@ -22,37 +30,8 @@ func SearchTermSongLyrics(c echo.Context) error {
 		})
 	}
 
-	res, err := utils.RequestShazamSearchTerm(term, strconv.Itoa(offsetInt), "artists,songs", "5")
+	resPublicSongLyrics, _ := pub.service.SearchByTerm(term, "artists,songs", "5", offsetInt)
 	
-	if err != nil {
-		return echo.NewHTTPError(http.StatusInternalServerError, echo.Map{
-			"message": "failed to get data",
-		})
-	}
-
-	keys := res.GetKeys()
-	
-	var resPublicSongLyrics = make([]models.PublicSongLyricResponse, len(keys))
-
-	var wg sync.WaitGroup
-	for i, key := range keys {
-		wg.Add(1)
-		go func (i int, key string) {
-			defer wg.Done()
-
-			res, err := utils.RequestShazamSearchKey(key)
-			
-			if err != nil {
-				return
-			}
-			
-			resPublicSongLyrics[i] = res.GetInPublicSongLyricResponse()
-			
-		}(i, key)
-
-	}
-	wg.Wait()
-
 	next := utils.GenerateNextLink(c, len(resPublicSongLyrics), url.Values{
 		"term": {term},
 		"offset": {strconv.Itoa(offsetInt + 5)},
@@ -65,7 +44,7 @@ func SearchTermSongLyrics(c echo.Context) error {
 
 }
 
-func SearchAudioSongLyric(c echo.Context) error {
+func (pub *PublicSongLyrics) SearchAudio(c echo.Context) error {
 	audioData, err := c.FormFile("audio")
 
 	if err != nil {
@@ -96,21 +75,17 @@ func SearchAudioSongLyric(c echo.Context) error {
 		return err
 	}
 
-	resData, err := utils.RequestShazamSearchAudio(rawBases64)
-
-	if err != nil {
-		return echo.NewHTTPError(http.StatusInternalServerError, echo.Map{
-			"message": "failed to get data",
-		})
-	}
+	resData, err := pub.service.SearchByAudio(rawBases64)
 	
-	if resData.Track.Key == "" {
-		return c.JSON(http.StatusNotFound, echo.Map{
-			"message": "song not found",
-		})
+	if err != nil {
+		if err.Error() == "song not found" {
+			return echo.NewHTTPError(http.StatusNotFound, echo.Map{
+				"message": err.Error(),
+			})
+		}
 	}
 
 	return c.JSON(http.StatusOK, echo.Map{
-		"public_song_lyrics": resData.GetInPublicSongLyricResponse(),
+		"public_song_lyrics": resData,
 	})
 }
