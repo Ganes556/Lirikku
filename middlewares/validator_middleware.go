@@ -23,7 +23,7 @@ func (v *Validator) Validate(i interface{}) error {
 				return errors.New(field + " is required")
 			}
 			if err.Tag() == "email" {
-				return errors.New(field + " is not valid email")
+				return errors.New(field + " is not valid")
 			}
 			if err.Tag() == "min" {
 				return errors.New(field + " must be at least " + err.Param() + " characters")
