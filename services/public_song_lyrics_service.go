@@ -9,8 +9,8 @@ import (
 )
 
 type IPublicSongLyricsService interface {
-	SearchByTerm(term, types, limit string, offset int) ([]models.PublicSongLyricResponse, error)
-	SearchByAudio(rawBases64 string) (models.PublicSongLyricResponse, error)
+	SearchSongLyricsByTermShazam(term, types, limit string, offset int) ([]models.PublicSongLyricResponse, error)
+	SearchSongLyricByAudioRapidShazam(rawBases64 string) (models.PublicSongLyricResponse, error)
 }
 
 type PublicSongLyricsRepo struct{}
@@ -29,7 +29,7 @@ func SetPublicSongLyricsRepo(repo IPublicSongLyricsService) {
 	publicSongLyricsRepo = repo
 }
 
-func (pub *PublicSongLyricsRepo) SearchByTerm(term, types, limit string, offset int) ([]models.PublicSongLyricResponse, error) {
+func (pub *PublicSongLyricsRepo) SearchSongLyricsByTermShazam(term, types, limit string, offset int) ([]models.PublicSongLyricResponse, error) {
 	
 	res, err := utils.RequestShazamSearchTerm(term, strconv.Itoa(offset), types, limit)
 
@@ -65,13 +65,9 @@ func (pub *PublicSongLyricsRepo) SearchByTerm(term, types, limit string, offset 
 	
 }
 
-func (pub *PublicSongLyricsRepo) SearchByAudio(rawBases64 string) (models.PublicSongLyricResponse, error) {
+func (pub *PublicSongLyricsRepo) SearchSongLyricByAudioRapidShazam(rawBases64 string) (models.PublicSongLyricResponse, error) {
 
 	res, err := utils.RequestShazamSearchAudio(rawBases64)
-
-	if err != nil {
-		return models.PublicSongLyricResponse{}, err
-	}
 
 	if res.Track.Key == "" {
 		return models.PublicSongLyricResponse{}, err

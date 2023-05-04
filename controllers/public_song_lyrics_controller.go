@@ -18,7 +18,7 @@ func NewPublicSongLyricsController(service services.IPublicSongLyricsService) *P
 	return &PublicSongLyrics{service}
 }
 
-func (pub *PublicSongLyrics) SearchTerm(c echo.Context) error {
+func (pub *PublicSongLyrics) SearchTermSongLyrics(c echo.Context) error {
 	term := c.QueryParam("term")
 	offset := c.QueryParam("offset")
 	
@@ -30,7 +30,7 @@ func (pub *PublicSongLyrics) SearchTerm(c echo.Context) error {
 		})
 	}
 
-	resPublicSongLyrics, _ := pub.service.SearchByTerm(term, "artists,songs", "5", offsetInt)
+	resPublicSongLyrics, _ := pub.service.SearchSongLyricsByTermShazam(term, "artists,songs", "5", offsetInt)
 	
 	next := utils.GenerateNextLink(c, len(resPublicSongLyrics), url.Values{
 		"term": {term},
@@ -44,24 +44,10 @@ func (pub *PublicSongLyrics) SearchTerm(c echo.Context) error {
 
 }
 
-func (pub *PublicSongLyrics) SearchAudio(c echo.Context) error {
-	audioData, err := c.FormFile("audio")
+func (pub *PublicSongLyrics) SearchAudioSongLyric(c echo.Context) error {
+	audioData, _ := c.FormFile("audio")
 
-	if err != nil {
-		return err
-	}
-
-	if audioData.Size > 500000 {
-		return c.JSON(http.StatusRequestEntityTooLarge, echo.Map{
-			"message": "audio size must be less than 500kb",
-		})
-	}
-
-	isAudio, err := utils.CheckAudioFile(audioData)
-
-	if err != nil {
-		return err
-	}
+	isAudio := utils.CheckAudioFile(audioData)
 
 	if !isAudio {
 		return c.JSON(http.StatusBadRequest, echo.Map{
@@ -69,20 +55,20 @@ func (pub *PublicSongLyrics) SearchAudio(c echo.Context) error {
 		})
 	}
 	
-	rawBases64, err := utils.Audio2RawBase64(audioData)
-
-	if err != nil {
-		return err
+	if audioData.Size > 500000 {
+		return c.JSON(http.StatusRequestEntityTooLarge, echo.Map{
+			"message": "audio size must be less than 500kb",
+		})
 	}
 
-	resData, err := pub.service.SearchByAudio(rawBases64)
+	rawBases64 := utils.Audio2RawBase64(audioData)
+
+	resData, err := pub.service.SearchSongLyricByAudioRapidShazam(rawBases64)
 	
 	if err != nil {
-		if err.Error() == "song not found" {
-			return echo.NewHTTPError(http.StatusNotFound, echo.Map{
-				"message": err.Error(),
-			})
-		}
+		return echo.NewHTTPError(http.StatusNotFound, echo.Map{
+			"message": "song not found",
+		})
 	}
 
 	return c.JSON(http.StatusOK, echo.Map{
