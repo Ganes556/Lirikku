@@ -29,11 +29,11 @@ func (a *Auth) Register(c echo.Context) error {
 		})
 	}
 
-	err := a.service.GetUserByEmail(reqAuth.Email)
+	err := a.service.CheckUserEmail(reqAuth.Email)
 	
-	if err == nil {
+	if err != nil {
 		return echo.NewHTTPError(http.StatusBadRequest, echo.Map{
-			"message": "email already registered",
+			"message": err.Error(),
 		})
 	}
 
