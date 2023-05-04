@@ -37,7 +37,7 @@ func (my *MySongLyrics) GetSongLyrics(c echo.Context) error {
 
 	if err != nil {
 		return echo.NewHTTPError(http.StatusInternalServerError, echo.Map{
-			"message": "failed to get data",
+			"message": "internal server error",
 		})
 	}
 	
@@ -86,7 +86,13 @@ func (my *MySongLyrics) SaveSongLyric(c echo.Context) error {
 
 	c.Bind(&reqSongLyricWrite)
 
-	my.service.SaveSongLyric(user.ID, reqSongLyricWrite)
+	err := my.service.SaveSongLyric(user.ID, reqSongLyricWrite)
+
+	if err != nil {
+		return echo.NewHTTPError(http.StatusInternalServerError, echo.Map{
+			"message": "internal server error",
+		})
+	}
 
 	return c.JSON(http.StatusCreated, echo.Map{
 		"message": "song lyric saved successfully",
@@ -113,7 +119,13 @@ func (my *MySongLyrics) SearchSongLyrics(c echo.Context) error {
 	lyric := c.QueryParam("lyric")
 	artist_names:= c.QueryParam("artist_names")
 
-	resSongLyrics, _ := my.service.SearchSongLyrics(user.ID, title, lyric, artist_names, offsetInt)
+	resSongLyrics, err := my.service.SearchSongLyrics(user.ID, title, lyric, artist_names, offsetInt)
+
+	if err != nil {
+		return echo.NewHTTPError(http.StatusInternalServerError, echo.Map{
+			"message": "internal server error",
+		})
+	}
 
 	next := utils.GenerateNextLink(c, len(resSongLyrics), url.Values{
 		"title": {title},
@@ -150,7 +162,13 @@ func (my *MySongLyrics) DeleteSongLyric(c echo.Context) error {
 		})
 	}
 
-	my.service.DeleteSongLyric(idSongLyricInt, user.ID)
+	err = my.service.DeleteSongLyric(idSongLyricInt, user.ID)
+
+	if err != nil {
+		return echo.NewHTTPError(http.StatusInternalServerError, echo.Map{
+			"message": "internal server error",
+		})
+	}
 		
 	return c.JSON(http.StatusOK, echo.Map{
 		"message": "song lyric deleted successfully",
@@ -184,7 +202,13 @@ func (my *MySongLyrics) UpdateSongLyric(c echo.Context) error {
 
 	c.Bind(&reqSongLyricWrite)
 
-	my.service.UpdateSongLyric(idSongLyricInt, user.ID, reqSongLyricWrite)
+	err = my.service.UpdateSongLyric(idSongLyricInt, user.ID, reqSongLyricWrite)
+
+	if err != nil {
+		return echo.NewHTTPError(http.StatusInternalServerError, echo.Map{
+			"message": "internal server error",
+		})
+	}
 
 	return c.JSON(http.StatusOK, echo.Map{
 		"message": "song lyric updated successfully",
