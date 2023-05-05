@@ -13,8 +13,8 @@ type SongLyric struct {
 type SongLyricWrite struct {
 	UserID 		uint     `json:",omitempty"`
 	ArtistNames string `json:"artist_names" validate:"required,ascii"`
-	Title   string   `json:"title" validate:"required,ascii"`
-	Lyric   string   `json:"lyric" validate:"required,ascii"`
+	Title   string   `json:"title" validate:"required"`
+	Lyric   string   `json:"lyric" validate:"required"`
 }
 
 type SongLyricResponse struct {
