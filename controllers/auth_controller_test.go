@@ -288,14 +288,14 @@ func TestLogin(t *testing.T) {
 			req.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
 			rec := httptest.NewRecorder()
 			
-			var dataUser models.User
+			var data models.User
 
 			if tt.wantErr {
 				if tt.expectedBody["message"] == "email not registered" {
 					mockAuthRepo.On("GetUserByEmail", tt.payload.Email).Return(models.User{},errors.New(tt.expectedBody["message"].(string))).Once()
 				}
 				if tt.expectedBody["message"] == "incorrect email or password" {
-					dataUser = models.User{
+					data = models.User{
 						Base: models.Base{
 							ID: 1,
 						},
@@ -303,10 +303,10 @@ func TestLogin(t *testing.T) {
 						Email: tt.payload.Email,
 						Password: "$2y$10$kNimIla567HkdVcawxIPfu6gC0KCC2mpibPUnxfxobBhcMIODAI.K",
 					}
-					mockAuthRepo.On("GetUserByEmail", tt.payload.Email).Return(dataUser, nil).Once()
+					mockAuthRepo.On("GetUserByEmail", tt.payload.Email).Return(data, nil).Once()
 				}
 			}else {
-				dataUser = models.User{
+				data = models.User{
 					Base: models.Base{
 						ID: 1,
 					},
@@ -314,7 +314,7 @@ func TestLogin(t *testing.T) {
 					Email: tt.payload.Email,
 					Password: "$2y$10$kNimIla567HkdVcawxIPfu6gC0KCC2mpibPUnxfxobBhcMIODAI.K",
 				}
-				mockAuthRepo.On("GetUserByEmail", tt.payload.Email).Return(dataUser, nil).Once()
+				mockAuthRepo.On("GetUserByEmail", tt.payload.Email).Return(data, nil).Once()
 			}
 
 			c := e.NewContext(req, rec)
