@@ -34,7 +34,7 @@ func (my *MySongLyrics) GetSongLyrics(c echo.Context) error {
 	}
 
 	resSongLyrics, err := my.service.GetSongLyrics(user.ID,offsetInt)
-
+	
 	if err != nil {
 		return echo.NewHTTPError(http.StatusInternalServerError, echo.Map{
 			"message": "internal server error",
@@ -83,10 +83,24 @@ func (my *MySongLyrics) SaveSongLyric(c echo.Context) error {
 	user := c.Get("user").(models.UserJWTDecode)
 	
 	var reqSongLyricWrite models.SongLyricWrite
-
+	
 	c.Bind(&reqSongLyricWrite)
+	
+	if err := c.Validate(reqSongLyricWrite); err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, echo.Map{
+			"message": err.Error(),
+		})
+	}
 
-	err := my.service.SaveSongLyric(user.ID, reqSongLyricWrite)
+	err := my.service.CheckSongLyric(user.ID, reqSongLyricWrite)
+
+	if err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, echo.Map{
+			"message": err.Error(),
+		})
+	}
+
+	err = my.service.SaveSongLyric(user.ID, reqSongLyricWrite)
 
 	if err != nil {
 		return echo.NewHTTPError(http.StatusInternalServerError, echo.Map{

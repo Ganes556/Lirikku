@@ -1,6 +1,8 @@
 package services
 
 import (
+	"errors"
+
 	"github.com/Lirikku/configs"
 	"github.com/Lirikku/models"
 )
@@ -8,6 +10,7 @@ import (
 type IMySongLyricsService interface {
 	GetSongLyrics(userID uint, offset int) ([]models.SongLyricResponse, error)
 	GetSongLyric(idSongLyric int,userID uint) (models.SongLyricResponse, error)
+	CheckSongLyric(userID uint, req models.SongLyricWrite) error 
 	SaveSongLyric(userID uint, req models.SongLyricWrite) error
 	SearchSongLyrics(userID uint, title, lyric, artist_names string, offset int) ([]models.SongLyricResponse,error)
 	DeleteSongLyric(idSongLyric int, userID uint) error
@@ -49,6 +52,17 @@ func (my *MySongLyricsRepo) GetSongLyric(idSongLyric int,userID uint) (models.So
 	return res, nil
 }
 
+func (my *MySongLyricsRepo) CheckSongLyric(userID uint,req models.SongLyricWrite) error {
+	
+	err := configs.DB.First(&models.SongLyric{}, "user_id = ? AND title = ? AND lyric = ? AND artist_names = ?", userID, req.Title, req.Lyric, req.ArtistNames).Error
+
+	if err == nil {
+		return errors.New("song lyric already saved")
+	}
+
+	return nil
+	
+}
 
 func (my *MySongLyricsRepo) SaveSongLyric(userID uint, req models.SongLyricWrite) error {
 	newSongLyric := models.SongLyric{
