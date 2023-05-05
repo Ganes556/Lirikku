@@ -5,7 +5,6 @@ import (
 
 	"github.com/Lirikku/models"
 	"github.com/Lirikku/services"
-	"github.com/Lirikku/utils"
 	"github.com/labstack/echo/v4"
 )
 
@@ -65,24 +64,18 @@ func (a *Auth) Login(c echo.Context) error {
 	user, err := a.service.GetUserByEmail(reqAuth.Email)
 	
 	if err != nil {
-		return echo.NewHTTPError(http.StatusBadRequest, echo.Map{
+		return echo.NewHTTPError(http.StatusUnauthorized, echo.Map{
 			"message": "email not registered",
 		})
 	}
 
-	if !utils.ComparePassword(user.Password,reqAuth.Password) {
+	if !user.CheckPassword(reqAuth.Password) {
 		return echo.NewHTTPError(http.StatusUnauthorized, echo.Map{
 			"message": "incorrect email or password",
 		})
 	}
 
-	token, err := utils.GenerateToken(user.ID, user.Name)
-
-	if err != nil {
-		return echo.NewHTTPError(http.StatusInternalServerError, echo.Map{
-			"message": "internal server error",
-		})
-	}
+	token, _ := user.GenerateToken()
 
 	return c.JSON(http.StatusOK, echo.Map{
 		"message": "success login",

@@ -10,6 +10,7 @@ import (
 type IAuthService interface {
 	CheckUserEmail(email string) error
 	CreateUser(req models.UserRegister) error
+	GetUserByEmail(email string) (models.User, error)
 }
 
 type AuthRepo struct {}
@@ -52,3 +53,15 @@ func (ar *AuthRepo) CreateUser(req models.UserRegister) error {
 
 	return nil
 }
+
+func (ar *AuthRepo) GetUserByEmail(email string) (models.User, error){
+	var user models.User
+
+	err := configs.DB.First(&user, "email = ?", email ).Error
+	if err != nil {
+		return user, err
+	}
+
+	return user, nil
+}
+
