@@ -121,6 +121,7 @@ func (my *MySongLyrics) SearchSongLyrics(c echo.Context) error {
 	offset := c.QueryParam("offset")
 
 	offsetInt, err := utils.CheckOffset(offset)
+	
 
 	if err != nil {
 		return echo.NewHTTPError(http.StatusBadRequest, echo.Map{
@@ -132,9 +133,9 @@ func (my *MySongLyrics) SearchSongLyrics(c echo.Context) error {
 	title := c.QueryParam("title")
 	lyric := c.QueryParam("lyric")
 	artist_names:= c.QueryParam("artist_names")
-
+	
 	resSongLyrics, err := my.service.SearchSongLyrics(user.ID, title, lyric, artist_names, offsetInt)
-
+	
 	if err != nil {
 		return echo.NewHTTPError(http.StatusInternalServerError, echo.Map{
 			"message": "internal server error",
