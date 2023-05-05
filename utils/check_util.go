@@ -7,6 +7,7 @@ import (
 	"github.com/h2non/filetype"
 )
 
+
 func CheckOffset(offset string) (int, error) {
 	if offset == "" {
 		offset = "0"
@@ -32,10 +33,10 @@ func CheckId(id string) (int, error) {
 }
 
 
-func CheckAudioFile(fh *multipart.FileHeader) (bool, error) {
+func CheckAudioFile(fh *multipart.FileHeader) bool {
 	file, err := fh.Open()
 	if err != nil {
-		return false, err
+		return false
 	}
 	defer file.Close()
 
@@ -43,18 +44,18 @@ func CheckAudioFile(fh *multipart.FileHeader) (bool, error) {
 	head := make([]byte, 261)
 	_, err = file.Read(head)
 	if err != nil {
-		return false, err
+		return false
 	}
 
 	kind, _ := filetype.Match(head)
 	if kind == filetype.Unknown {
-		return false, nil
+		return false
 	}
 
 	// Check if the detected file type is a sound file type
 	if kind.MIME.Type == "audio" {
-		return true, nil
+		return true
 	}
 
-	return false, nil
+	return false
 }

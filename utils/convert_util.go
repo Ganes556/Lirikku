@@ -9,7 +9,7 @@ import (
 	"github.com/Lirikku/libs"
 )
 
-func Audio2RawBase64(data *multipart.FileHeader) (string, error) {
+func Audio2RawBase64(data *multipart.FileHeader) string {
 
 	dat, _:= data.Open()
 	
@@ -26,11 +26,11 @@ func Audio2RawBase64(data *multipart.FileHeader) (string, error) {
 	err := cmd.PipeInput(r).OutputFormat("s16le").AudioCodec("pcm_s16le").AudioChannels(1).AudioRate(44100).PipeOutput(&rawOuput).Run()
 
 	if err != nil {
-		return "", err
+		return ""
 	}
 
 	rawBase64 := base64.StdEncoding.EncodeToString(rawOuput.Bytes())
 	
-	return rawBase64, nil
+	return rawBase64
 	
 }
