@@ -13,7 +13,7 @@ type RapidShazamSearchAudioResponse struct {
 	} `json:"track"`
 }
 
-func (sa *RapidShazamSearchAudioResponse) GetLyrics() string {
+func (sa *RapidShazamSearchAudioResponse) GetLyric() string {
 	var lyrics string
 	if len(sa.Track.Sections) > 1 {
 		lyrics = strings.Join(sa.Track.Sections[1].Text, "\n")
@@ -25,6 +25,6 @@ func (sa *RapidShazamSearchAudioResponse) GetInPublicSongLyricResponse() PublicS
 	var res PublicSongLyricResponse
 	res.Title = sa.Track.Title
 	res.ArtistNames = sa.Track.Subtitle
-	res.Lyric = sa.GetLyrics()
+	res.Lyric = sa.GetLyric()
 	return res
 }
