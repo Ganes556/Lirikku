@@ -73,7 +73,6 @@ func TestGetSongLyrics(t *testing.T){
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			e := echo.New()
-			e.Validator = middlewares.NewValidator()
 
 			req := httptest.NewRequest(http.MethodGet, "/song_lyrics/my" + tt.param, nil)
 			rec := httptest.NewRecorder()
@@ -188,7 +187,6 @@ func TestGetSongLyric(t *testing.T){
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			e := echo.New()
-			e.Validator = middlewares.NewValidator()
 
 			req := httptest.NewRequest(http.MethodGet, "/song_lyrics/my/" + tt.idSongLyric, nil)
 			rec := httptest.NewRecorder()
@@ -441,7 +439,6 @@ func TestSearchSongLyrics(t *testing.T){
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			e := echo.New()
-			e.Validator = middlewares.NewValidator()
 			
 			req := httptest.NewRequest(http.MethodPost, "/song_lyrics/my/search" + tt.param, nil)
 			req.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
@@ -562,7 +559,6 @@ func TestDeleteSongLyric(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			e := echo.New()
-			e.Validator = middlewares.NewValidator()
 			
 			req := httptest.NewRequest(http.MethodDelete, "/song_lyrics/my/" + tt.idSongLyric, nil)
 
@@ -695,7 +691,6 @@ func TestUpdateSongLyric(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			e := echo.New()
-			e.Validator = middlewares.NewValidator()
 			
 			payload, err := json.Marshal(tt.payload)
 			assert.NoError(t, err)
