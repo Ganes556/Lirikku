@@ -20,6 +20,9 @@ func (v *Validator) Validate(i interface{}) error {
 		for _, err := range err.(validator.ValidationErrors) {
 			field := strings.ToLower(err.Field())
 			if err.Tag() == "required" {
+				if field == "artistnames"{
+					return errors.New("artist_names is required")
+				}
 				return errors.New(field + " is required")
 			}
 			if err.Tag() == "email" {
