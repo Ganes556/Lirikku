@@ -18,14 +18,14 @@ type User struct {
 }
 
 type UserRegister struct {
-	Name 	 string `json:"name" validate:"required,ascii"`
-	Email 	string `json:"email" validate:"required,ascii,email"`
-	Password string `json:"password" validate:"required,ascii,min=8"`
+	Name 	 string `json:"name" validate:"required"`
+	Email 	string `json:"email" validate:"required,email"`
+	Password string `json:"password" validate:"required,min=8"`
 }
 
 type UserLogin struct {
-	Email 	string `json:"email" validate:"required,ascii,email"`
-	Password string `json:"password" validate:"required,ascii,min=8"`
+	Email 	string `json:"email" validate:"required,email"`
+	Password string `json:"password" validate:"required,min=8"`
 }
 
 type UserJWTDecode struct {

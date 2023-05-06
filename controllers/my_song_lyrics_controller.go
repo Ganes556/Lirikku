@@ -19,7 +19,7 @@ func NewMySongLyricsController(service services.IMySongLyricsService) *MySongLyr
 	return &MySongLyrics{service}
 }
 
-func (my *MySongLyrics) GetAll(c echo.Context) error {
+func (my *MySongLyrics) GetSongLyrics(c echo.Context) error {
 
 	user := c.Get("user").(models.UserJWTDecode)
 
@@ -33,11 +33,11 @@ func (my *MySongLyrics) GetAll(c echo.Context) error {
 		})
 	}
 
-	resSongLyrics, err := my.service.GetMySongLyrics(user.ID,offsetInt)
-
+	resSongLyrics, err := my.service.GetSongLyrics(user.ID,offsetInt)
+	
 	if err != nil {
 		return echo.NewHTTPError(http.StatusInternalServerError, echo.Map{
-			"message": "failed to get data",
+			"message": "internal server error",
 		})
 	}
 	
@@ -51,7 +51,7 @@ func (my *MySongLyrics) GetAll(c echo.Context) error {
 	})
 }
 
-func (my *MySongLyrics) Get(c echo.Context) error {
+func (my *MySongLyrics) GetSongLyric(c echo.Context) error {
 
 	user := c.Get("user").(models.UserJWTDecode)
 	
@@ -65,10 +65,10 @@ func (my *MySongLyrics) Get(c echo.Context) error {
 		})
 	}
 
-	resSongLyric, err := my.service.GetMySongLyric(idSongLyricInt, user.ID)
+	resSongLyric, err := my.service.GetSongLyric(idSongLyricInt, user.ID)
 	
 	if err != nil {
-		return echo.NewHTTPError(http.StatusBadRequest, echo.Map{
+		return echo.NewHTTPError(http.StatusNotFound, echo.Map{
 			"message": "song lyric not found",
 		})
 	}
@@ -78,15 +78,35 @@ func (my *MySongLyrics) Get(c echo.Context) error {
 	})
 }
 
-func (my *MySongLyrics) Save(c echo.Context) error {
+func (my *MySongLyrics) SaveSongLyric(c echo.Context) error {
 
 	user := c.Get("user").(models.UserJWTDecode)
 	
 	var reqSongLyricWrite models.SongLyricWrite
-
+	
 	c.Bind(&reqSongLyricWrite)
+	
+	if err := c.Validate(reqSongLyricWrite); err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, echo.Map{
+			"message": err.Error(),
+		})
+	}
 
-	my.service.SaveMySongLyric(user.ID, reqSongLyricWrite)
+	err := my.service.CheckSongLyric(user.ID, reqSongLyricWrite)
+
+	if err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, echo.Map{
+			"message": err.Error(),
+		})
+	}
+
+	err = my.service.SaveSongLyric(user.ID, reqSongLyricWrite)
+
+	if err != nil {
+		return echo.NewHTTPError(http.StatusInternalServerError, echo.Map{
+			"message": "internal server error",
+		})
+	}
 
 	return c.JSON(http.StatusCreated, echo.Map{
 		"message": "song lyric saved successfully",
@@ -94,13 +114,14 @@ func (my *MySongLyrics) Save(c echo.Context) error {
 	
 }
 
-func (my *MySongLyrics) Search(c echo.Context) error {
+func (my *MySongLyrics) SearchSongLyrics(c echo.Context) error {
 
 	user := c.Get("user").(models.UserJWTDecode)
 	
 	offset := c.QueryParam("offset")
 
 	offsetInt, err := utils.CheckOffset(offset)
+	
 
 	if err != nil {
 		return echo.NewHTTPError(http.StatusBadRequest, echo.Map{
@@ -112,8 +133,14 @@ func (my *MySongLyrics) Search(c echo.Context) error {
 	title := c.QueryParam("title")
 	lyric := c.QueryParam("lyric")
 	artist_names:= c.QueryParam("artist_names")
-
-	resSongLyrics, _ := my.service.SearchMySongLyrics(user.ID, title, lyric, artist_names, offsetInt)
+	
+	resSongLyrics, err := my.service.SearchSongLyrics(user.ID, title, lyric, artist_names, offsetInt)
+	
+	if err != nil {
+		return echo.NewHTTPError(http.StatusInternalServerError, echo.Map{
+			"message": "internal server error",
+		})
+	}
 
 	next := utils.GenerateNextLink(c, len(resSongLyrics), url.Values{
 		"title": {title},
@@ -128,7 +155,7 @@ func (my *MySongLyrics) Search(c echo.Context) error {
 	})
 }
 
-func (my *MySongLyrics) Delete(c echo.Context) error {
+func (my *MySongLyrics) DeleteSongLyric(c echo.Context) error {
 
 	user := c.Get("user").(models.UserJWTDecode)
 	
@@ -142,15 +169,21 @@ func (my *MySongLyrics) Delete(c echo.Context) error {
 		})
 	}
 
-	_, err = my.service.GetMySongLyric(idSongLyricInt, user.ID)
+	_, err = my.service.GetSongLyric(idSongLyricInt, user.ID)
 	
 	if err != nil {
-		return echo.NewHTTPError(http.StatusBadRequest, echo.Map{
+		return echo.NewHTTPError(http.StatusNotFound, echo.Map{
 			"message": "song lyric not found",
 		})
 	}
 
-	my.service.DeleteMySongLyric(idSongLyricInt, user.ID)
+	err = my.service.DeleteSongLyric(idSongLyricInt, user.ID)
+
+	if err != nil {
+		return echo.NewHTTPError(http.StatusInternalServerError, echo.Map{
+			"message": "internal server error",
+		})
+	}
 		
 	return c.JSON(http.StatusOK, echo.Map{
 		"message": "song lyric deleted successfully",
@@ -158,7 +191,7 @@ func (my *MySongLyrics) Delete(c echo.Context) error {
 
 }
 
-func (my *MySongLyrics) Update(c echo.Context) error {
+func (my *MySongLyrics) UpdateSongLyric(c echo.Context) error {
 
 	user := c.Get("user").(models.UserJWTDecode)
 	
@@ -172,10 +205,10 @@ func (my *MySongLyrics) Update(c echo.Context) error {
 		})
 	}
 	
-	_, err = my.service.GetMySongLyric(idSongLyricInt, user.ID)
+	_, err = my.service.GetSongLyric(idSongLyricInt, user.ID)
 
 	if err != nil {
-		return echo.NewHTTPError(http.StatusBadRequest, echo.Map{
+		return echo.NewHTTPError(http.StatusNotFound, echo.Map{
 			"message": "song lyric not found",
 		})
 	}
@@ -184,7 +217,13 @@ func (my *MySongLyrics) Update(c echo.Context) error {
 
 	c.Bind(&reqSongLyricWrite)
 
-	my.service.UpdateMySongLyric(idSongLyricInt, user.ID, reqSongLyricWrite)
+	err = my.service.UpdateSongLyric(idSongLyricInt, user.ID, reqSongLyricWrite)
+
+	if err != nil {
+		return echo.NewHTTPError(http.StatusInternalServerError, echo.Map{
+			"message": "internal server error",
+		})
+	}
 
 	return c.JSON(http.StatusOK, echo.Map{
 		"message": "song lyric updated successfully",

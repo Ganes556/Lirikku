@@ -3,7 +3,6 @@ package controllers
 import (
 	"net/http"
 
-	"github.com/Lirikku/configs"
 	"github.com/Lirikku/models"
 	"github.com/Lirikku/services"
 	"github.com/labstack/echo/v4"
@@ -37,7 +36,13 @@ func (a *Auth) Register(c echo.Context) error {
 		})
 	}
 
-	a.service.CreateUser(reqAuth)
+	err = a.service.CreateUser(reqAuth)
+
+	if err != nil {
+		return echo.NewHTTPError(http.StatusInternalServerError, echo.Map{
+			"message": "internal server error",
+		})
+	}
 	
 	return c.JSON(http.StatusCreated, echo.Map{
 		"message": "success created user",
@@ -56,30 +61,21 @@ func (a *Auth) Login(c echo.Context) error {
 		})
 	}
 
-
-	user := models.User{}
-
-	err := configs.DB.First(&user,"email = ?", reqAuth.Email).Error
+	user, err := a.service.GetUserByEmail(reqAuth.Email)
 	
 	if err != nil {
-		return echo.NewHTTPError(http.StatusBadRequest, echo.Map{
+		return echo.NewHTTPError(http.StatusUnauthorized, echo.Map{
 			"message": "email not registered",
 		})
 	}
 
 	if !user.CheckPassword(reqAuth.Password) {
-		return echo.NewHTTPError(http.StatusBadRequest, echo.Map{
-			"message": "invalid email or password",
+		return echo.NewHTTPError(http.StatusUnauthorized, echo.Map{
+			"message": "incorrect email or password",
 		})
 	}
 
-	token, err := user.GenerateToken()
-
-	if err != nil {
-		return echo.NewHTTPError(http.StatusBadRequest, echo.Map{
-			"message": "failed to generate token",
-		})
-	}
+	token, _ := user.GenerateToken()
 
 	return c.JSON(http.StatusOK, echo.Map{
 		"message": "success login",

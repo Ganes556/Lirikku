@@ -1,17 +1,20 @@
 package services
 
 import (
+	"errors"
+
 	"github.com/Lirikku/configs"
 	"github.com/Lirikku/models"
 )
 
 type IMySongLyricsService interface {
-	GetMySongLyrics(userID uint, offset int) ([]models.SongLyricResponse, error)
-	GetMySongLyric(idSongLyric int,userID uint) (models.SongLyricResponse, error)
-	SaveMySongLyric(userID uint, req models.SongLyricWrite) error
-	SearchMySongLyrics(userID uint, title, lyric, artist_names string, offset int) ([]models.SongLyricResponse,error)
-	DeleteMySongLyric(idSongLyric int, userID uint) error
-	UpdateMySongLyric(idSongLyric int, userID uint, req models.SongLyricWrite) error
+	GetSongLyrics(userID uint, offset int) ([]models.SongLyricResponse, error)
+	GetSongLyric(idSongLyric int,userID uint) (models.SongLyricResponse, error)
+	CheckSongLyric(userID uint, req models.SongLyricWrite) error 
+	SaveSongLyric(userID uint, req models.SongLyricWrite) error
+	SearchSongLyrics(userID uint, title, lyric, artist_names string, offset int) ([]models.SongLyricResponse,error)
+	DeleteSongLyric(idSongLyric int, userID uint) error
+	UpdateSongLyric(idSongLyric int, userID uint, req models.SongLyricWrite) error
 }
 
 type MySongLyricsRepo struct{}
@@ -30,7 +33,7 @@ func SetMySongLyricsRepo(repo IMySongLyricsService) {
 	mySongLyricsRepo = repo
 }
 
-func (my *MySongLyricsRepo) GetMySongLyrics(userID uint, offset int) ([]models.SongLyricResponse, error) {
+func (my *MySongLyricsRepo) GetSongLyrics(userID uint, offset int) ([]models.SongLyricResponse, error) {
 	var res []models.SongLyricResponse
 	err:= configs.DB.Model(&models.SongLyric{}).Limit(5).Offset(offset).Find(&res, "user_id = ?", userID).Error
 	if err != nil {
@@ -39,7 +42,7 @@ func (my *MySongLyricsRepo) GetMySongLyrics(userID uint, offset int) ([]models.S
 	return res, nil
 }
 
-func (my *MySongLyricsRepo) GetMySongLyric(idSongLyric int,userID uint) (models.SongLyricResponse, error){
+func (my *MySongLyricsRepo) GetSongLyric(idSongLyric int,userID uint) (models.SongLyricResponse, error){
 	var res models.SongLyricResponse
 	
 	err := configs.DB.Model(&models.SongLyric{}).First(&res, "id = ? AND user_id = ?", idSongLyric, userID).Error
@@ -49,8 +52,19 @@ func (my *MySongLyricsRepo) GetMySongLyric(idSongLyric int,userID uint) (models.
 	return res, nil
 }
 
+func (my *MySongLyricsRepo) CheckSongLyric(userID uint,req models.SongLyricWrite) error {
+	
+	err := configs.DB.First(&models.SongLyric{}, "user_id = ? AND title = ? AND lyric = ? AND artist_names = ?", userID, req.Title, req.Lyric, req.ArtistNames).Error
 
-func (my *MySongLyricsRepo) SaveMySongLyric(userID uint, req models.SongLyricWrite) error {
+	if err == nil {
+		return errors.New("song lyric already saved")
+	}
+
+	return nil
+	
+}
+
+func (my *MySongLyricsRepo) SaveSongLyric(userID uint, req models.SongLyricWrite) error {
 	newSongLyric := models.SongLyric{
 		UserID: userID,
 		Title: req.Title,
@@ -65,7 +79,7 @@ func (my *MySongLyricsRepo) SaveMySongLyric(userID uint, req models.SongLyricWri
 	return nil
 }
 
-func (my *MySongLyricsRepo) SearchMySongLyrics(userID uint, title, lyric, artist_names string, offset int) ([]models.SongLyricResponse,error) {
+func (my *MySongLyricsRepo) SearchSongLyrics(userID uint, title, lyric, artist_names string, offset int) ([]models.SongLyricResponse,error) {
 
 	var resSongLyrics []models.SongLyricResponse
 
@@ -79,7 +93,7 @@ func (my *MySongLyricsRepo) SearchMySongLyrics(userID uint, title, lyric, artist
 
 }
 
-func (my *MySongLyricsRepo) DeleteMySongLyric(idSongLyric int, userID uint) error{
+func (my *MySongLyricsRepo) DeleteSongLyric(idSongLyric int, userID uint) error{
 	
 	err := configs.DB.Unscoped().Delete(&models.SongLyric{}, "id = ? AND user_id = ?", idSongLyric, userID).Error
 
@@ -89,7 +103,7 @@ func (my *MySongLyricsRepo) DeleteMySongLyric(idSongLyric int, userID uint) erro
 	return  nil
 }
 
-func (my *MySongLyricsRepo) UpdateMySongLyric(idSongLyric int, userID uint, req models.SongLyricWrite) error{
+func (my *MySongLyricsRepo) UpdateSongLyric(idSongLyric int, userID uint, req models.SongLyricWrite) error{
 	updateSongLyric := models.SongLyric{
 		Title: req.Title,
 		Lyric: req.Lyric,

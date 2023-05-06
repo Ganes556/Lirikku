@@ -35,7 +35,7 @@ func (sm *ShazamSearchTermResponse) GetKeys() []string {
 
 // search key
 
-func (sk *ShazamSearchKeyResponse) GetLyrics() string {	
+func (sk *ShazamSearchKeyResponse) GetLyric() string {	
 	var lyrics string
 	if len(sk.Sections) > 1 {
 		lyrics = strings.Join(sk.Sections[1].Text, "\n")
@@ -48,6 +48,6 @@ func (sk *ShazamSearchKeyResponse) GetInPublicSongLyricResponse() PublicSongLyri
 	var res PublicSongLyricResponse
 	res.Title = sk.Title
 	res.ArtistNames = sk.Subtitle
-	res.Lyric = sk.GetLyrics()
+	res.Lyric = sk.GetLyric()
 	return res
 }
