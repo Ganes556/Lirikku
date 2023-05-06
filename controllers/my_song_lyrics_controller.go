@@ -68,7 +68,7 @@ func (my *MySongLyrics) GetSongLyric(c echo.Context) error {
 	resSongLyric, err := my.service.GetSongLyric(idSongLyricInt, user.ID)
 	
 	if err != nil {
-		return echo.NewHTTPError(http.StatusBadRequest, echo.Map{
+		return echo.NewHTTPError(http.StatusNotFound, echo.Map{
 			"message": "song lyric not found",
 		})
 	}
@@ -172,7 +172,7 @@ func (my *MySongLyrics) DeleteSongLyric(c echo.Context) error {
 	_, err = my.service.GetSongLyric(idSongLyricInt, user.ID)
 	
 	if err != nil {
-		return echo.NewHTTPError(http.StatusBadRequest, echo.Map{
+		return echo.NewHTTPError(http.StatusNotFound, echo.Map{
 			"message": "song lyric not found",
 		})
 	}
@@ -208,7 +208,7 @@ func (my *MySongLyrics) UpdateSongLyric(c echo.Context) error {
 	_, err = my.service.GetSongLyric(idSongLyricInt, user.ID)
 
 	if err != nil {
-		return echo.NewHTTPError(http.StatusBadRequest, echo.Map{
+		return echo.NewHTTPError(http.StatusNotFound, echo.Map{
 			"message": "song lyric not found",
 		})
 	}

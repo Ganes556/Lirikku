@@ -78,11 +78,13 @@ func TestGetSongLyrics(t *testing.T){
 			rec := httptest.NewRecorder()
 
 			c := e.NewContext(req, rec)
-			
-			c.Set("user", models.UserJWTDecode{
+
+			user := models.UserJWTDecode{
 				ID: 1,
 				Name: "test",
-			})
+			}
+			
+			c.Set("user", user)
 
 			offset := c.QueryParam("offset")
 			
@@ -94,7 +96,7 @@ func TestGetSongLyrics(t *testing.T){
 
 			var data []models.SongLyricResponse
 			if tt.wantErr {
-				mockMySongLyricsRepo.On("GetSongLyrics", uint(1), offsetInt).Return(data,errors.New("internal server error")).Once()
+				mockMySongLyricsRepo.On("GetSongLyrics", user.ID, offsetInt).Return(data,errors.New(tt.expectedBody["message"].(string))).Once()
 			}else {
 				data = append(data, models.SongLyricResponse{
 					ID: 1,
@@ -107,7 +109,7 @@ func TestGetSongLyrics(t *testing.T){
 					"offset": {strconv.Itoa(offsetInt + 5)},
 				}.Encode())
 				
-				mockMySongLyricsRepo.On("GetSongLyrics", uint(1), offsetInt).Return(data, nil).Once()
+				mockMySongLyricsRepo.On("GetSongLyrics", user.ID, offsetInt).Return(data, nil).Once()
 
 			}
 
@@ -176,7 +178,7 @@ func TestGetSongLyric(t *testing.T){
 		{
 			name: "Failed: song lyric not found (GetSongLyric)",
 			idSongLyric: "99",
-			expectedCode: http.StatusBadRequest,
+			expectedCode: http.StatusNotFound,
 			expectedBody: echo.Map{
 				"message": "song lyric not found",
 			},
@@ -213,7 +215,7 @@ func TestGetSongLyric(t *testing.T){
 			var data models.SongLyricResponse
 			
 			if tt.wantErr {
-				mockMySongLyricsRepo.On("GetSongLyric", num , user.ID).Return(data, errors.New("song lyric not found")).Once()
+				mockMySongLyricsRepo.On("GetSongLyric", num , user.ID).Return(data, errors.New(tt.expectedBody["message"].(string))).Once()
 			}else {
 				data = tt.expectedBody["my_song_lyrics"].(models.SongLyricResponse)
 				mockMySongLyricsRepo.On("GetSongLyric", 1, user.ID).Return(data, nil).Once()
@@ -538,7 +540,7 @@ func TestDeleteSongLyric(t *testing.T) {
 		},
 		{
 			name: "Failed: song lyric not found",
-			expectedCode: http.StatusBadRequest,
+			expectedCode: http.StatusNotFound,
 			idSongLyric: "123",
 			expectedBody: echo.Map{
 				"message": "song lyric not found",
@@ -667,7 +669,7 @@ func TestUpdateSongLyric(t *testing.T) {
 				Title: "test",
 				ArtistNames: "test",
 			},
-			expectedCode: http.StatusBadRequest,
+			expectedCode: http.StatusNotFound,
 			expectedBody: echo.Map{
 				"message": "song lyric not found",
 			},
