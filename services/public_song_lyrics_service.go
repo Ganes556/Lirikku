@@ -68,8 +68,8 @@ func (pub *PublicSongLyricsRepo) SearchSongLyricsByTermShazam(term, types, limit
 func (pub *PublicSongLyricsRepo) SearchSongLyricByAudioRapidShazam(rawBases64 string) (models.PublicSongLyricResponse, error) {
 
 	res, err := utils.RequestShazamSearchAudio(rawBases64)
-
-	if res.Track.Key == "" {
+	
+	if err != nil || res.Track.Key == "" {
 		return models.PublicSongLyricResponse{}, err
 	}
 

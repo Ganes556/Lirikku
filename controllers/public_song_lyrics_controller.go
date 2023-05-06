@@ -30,8 +30,14 @@ func (pub *PublicSongLyrics) SearchTermSongLyrics(c echo.Context) error {
 		})
 	}
 
-	resPublicSongLyrics, _ := pub.service.SearchSongLyricsByTermShazam(term, "artists,songs", "5", offsetInt)
+	resPublicSongLyrics, err := pub.service.SearchSongLyricsByTermShazam(term, "artists,songs", "5", offsetInt)
 	
+	if err != nil {
+		return echo.NewHTTPError(http.StatusInternalServerError, echo.Map{
+			"message": "internal server error",
+		})
+	}
+
 	next := utils.GenerateNextLink(c, len(resPublicSongLyrics), url.Values{
 		"term": {term},
 		"offset": {strconv.Itoa(offsetInt + 5)},
@@ -48,15 +54,15 @@ func (pub *PublicSongLyrics) SearchAudioSongLyric(c echo.Context) error {
 	audioData, _ := c.FormFile("audio")
 
 	isAudio := utils.CheckAudioFile(audioData)
-
 	if !isAudio {
-		return c.JSON(http.StatusBadRequest, echo.Map{
-			"message": "invalid file type. please upload an audio file.",
+		// log.Println(isAudio)
+		return echo.NewHTTPError(http.StatusBadRequest, echo.Map{
+			"message": "invalid file type. please upload an audio file",
 		})
 	}
 	
 	if audioData.Size > 500000 {
-		return c.JSON(http.StatusRequestEntityTooLarge, echo.Map{
+		return echo.NewHTTPError(http.StatusRequestEntityTooLarge, echo.Map{
 			"message": "audio size must be less than 500kb",
 		})
 	}
@@ -67,7 +73,7 @@ func (pub *PublicSongLyrics) SearchAudioSongLyric(c echo.Context) error {
 	
 	if err != nil {
 		return echo.NewHTTPError(http.StatusNotFound, echo.Map{
-			"message": "song not found",
+			"message": "song lyric not found",
 		})
 	}
 
