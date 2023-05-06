@@ -7,8 +7,7 @@ import (
 )
 
 func init(){
-	godotenv.Load(".env.example")
-	// godotenv.Load(".env.production")
+	godotenv.Load(".env.production")
 	configs.InitDB()
 }
 
