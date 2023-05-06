@@ -118,7 +118,7 @@ func TestRegister(t *testing.T) {
 			wantErr: true,
 		},
 		{
-			name: "Internal Error: create user",
+			name: "Failed: internal server error (CreateUser)",
 			payload: models.UserRegister{
 				Name: "test2",
 				Email: "testing@gmail.com",
@@ -143,12 +143,10 @@ func TestRegister(t *testing.T) {
 			rec := httptest.NewRecorder()
 			
 			if tt.wantErr {
-				
-				if tt.name == "Internal Error: create user" {
+				if tt.name == "Failed: internal server error (CreateUser)" {
 					mockAuthRepo.On("CheckUserEmail", tt.payload.Email).Return(nil).Once()
-					mockAuthRepo.On("CreateUser", tt.payload).Return(errors.New("internal server error")).Once()
+					mockAuthRepo.On("CreateUser", tt.payload).Return(errors.New(tt.expectedBody["message"].(string))).Once()
 				}else {
-
 					mockAuthRepo.On("CheckUserEmail", tt.payload.Email).Return(errors.New(tt.expectedBody["message"].(string))).Once()
 				}
 
