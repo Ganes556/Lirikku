@@ -2,8 +2,11 @@ name: Testing
 
 on:
   pull_request:
-    branches: ['feature/ci-cd']
+    branches: ['master']
 
+  pull_request:
+    branches: ['dev']
+    
 jobs:
   test-section-28:
     runs-on: ubuntu-latest

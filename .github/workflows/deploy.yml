@@ -1,8 +1,11 @@
 name: Deploy
 
 on:
-  push:
-    branches: ['feature/ci-cd']
+  pull_request:
+    branches: ['master']
+
+  pull_request:
+    branches: ['dev']
 
 jobs:
   push-to-docker-hub:
