@@ -10,12 +10,25 @@ type SongLyric struct {
 	Lyric   string    `json:"lyric"`
 }
 
-type ResponseSongLyric struct {
+type SongLyricWrite struct {
+	ArtistNames string `json:"artist_names" validate:"required,ascii"`
+	Title   string   `json:"title" validate:"required"`
+	Lyric   string   `json:"lyric" validate:"required"`
+}
+
+type SongLyricResponse struct {
 	ID 		uint     `json:"id"`
 	ArtistNames string `json:"artist_names"`
 	Title   string   `json:"title"`
 	Lyric   string   `json:"lyric"`
 }
+
+type PublicSongLyricResponse struct {
+	ArtistNames string `json:"artist_names"`
+	Title   string   `json:"title"`
+	Lyric   string   `json:"lyric"`
+}
+
 
 // hooks
 func (s *SongLyric) AfterDelete(tx *gorm.DB) (err error) {
