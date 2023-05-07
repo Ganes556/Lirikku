@@ -2,7 +2,6 @@ package utils
 
 import (
 	"encoding/json"
-	"fmt"
 	"net/http"
 	"net/url"
 	"os"
@@ -92,14 +91,12 @@ func RequestShazamSearchAudio(rawBase64 string) (models.RapidShazamSearchAudioRe
 	req.Header.Add("X-RapidAPI-Key", os.Getenv("RAPID_SHAZAM_API_KEY"))
 
 	if err != nil {
-		fmt.Println(err)
 		return models.RapidShazamSearchAudioResponse{}, err
 	}
 	
 	res, err := client.Do(req)
 
 	if err != nil {
-		fmt.Println(err)
 		return models.RapidShazamSearchAudioResponse{}, err
 	}
 	
