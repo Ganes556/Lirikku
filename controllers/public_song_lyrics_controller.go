@@ -22,11 +22,11 @@ func (pub *PublicSongLyrics) SearchTermSongLyrics(c echo.Context) error {
 	term := c.QueryParam("term")
 	offset := c.QueryParam("offset")
 	
-	offsetInt, err := utils.CheckOffset(offset)
+	offsetInt := utils.CheckOffset(offset)
 
-	if err != nil {
+	if offsetInt == -1 {
 		return echo.NewHTTPError(http.StatusBadRequest, echo.Map{
-			"message": "offset must be a number",
+			"message": "offset must be a number and greater than 0 or equal to 0",
 		})
 	}
 
