@@ -14,7 +14,7 @@ import (
 
 func RequestShazamSearchTerm(term, offset, types, limit string) (models.ShazamSearchTermResponse, error) {
 
-	urlShazamSearchKey := "https://" + os.Getenv("SHAZAM_API_HOST") + "/services/search/v4/id/ID/web/search"
+	urlShazamSearchKey := "https://www.shazam.com/services/search/v4/id/ID/web/search"
 
 	client := &http.Client{
 		Timeout: time.Duration(10) * time.Second,
@@ -51,7 +51,7 @@ func RequestShazamSearchTerm(term, offset, types, limit string) (models.ShazamSe
 }
 
 func RequestShazamSearchKey(key string) (models.ShazamSearchKeyResponse, error) {
-	urlShazamSearchKey := "https://" + os.Getenv("SHAZAM_API_HOST") + "/discovery/v5/id/ID/web/-/track/" + key		
+	urlShazamSearchKey := "https://www.shazam.com/discovery/v5/id/ID/web/-/track/" + key		
 	
 	client := &http.Client{
 		Timeout: time.Duration(10) * time.Second,
@@ -80,7 +80,7 @@ func RequestShazamSearchKey(key string) (models.ShazamSearchKeyResponse, error) 
 
 func RequestShazamSearchAudio(rawBase64 string) (models.RapidShazamSearchAudioResponse, error) {
 	
-	urlShazamSearchAudio := "https://" + os.Getenv("RAPID_SHAZAM_API_HOST") + "/songs/v2/detect"
+	urlShazamSearchAudio := "https://shazam.p.rapidapi.com/songs/v2/detect"
 	
 	client := &http.Client{
 		Timeout: time.Duration(10) * time.Second,
