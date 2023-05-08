@@ -15,9 +15,10 @@ func CheckOffset(offset string) (int, error) {
 
 	offsetInt, err := strconv.Atoi(offset)
 
-	if err != nil {
+	if err != nil || offsetInt < 0{
 		return 0, err
 	}
+	
 
 	return offsetInt, nil
 }
@@ -25,7 +26,7 @@ func CheckOffset(offset string) (int, error) {
 func CheckId(id string) (int, error) {
 	idInt, err := strconv.Atoi(id)
 
-	if err != nil {
+	if err != nil || idInt < 0{
 		return 0, err
 	}
 

@@ -26,7 +26,7 @@ func (pub *PublicSongLyrics) SearchTermSongLyrics(c echo.Context) error {
 
 	if err != nil {
 		return echo.NewHTTPError(http.StatusBadRequest, echo.Map{
-			"message": "offset must be a number",
+			"message": "offset must be a number and greater than 0 or equal to 0",
 		})
 	}
 

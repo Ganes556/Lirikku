@@ -50,11 +50,11 @@ func TestSearchTermSongLyrics(t *testing.T) {
 			wantErr:      false,
 		},
 		{
-			name: "Failed: offset must be a number",
+			name: "Failed: offset must be a number and greater than 0 or equal to 0",
 			param: "?term=test&offset=test",
 			expectedCode: http.StatusBadRequest,
 			expectedBody: echo.Map{
-				"message": "offset must be a number",
+				"message": "offset must be a number and greater than 0 or equal to 0",
 			},
 			wantErr:      true,
 		},
@@ -81,7 +81,7 @@ func TestSearchTermSongLyrics(t *testing.T) {
 
 			offsetInt, err := utils.CheckOffset(offset)
 
-			if tt.name != "Failed: offset must be a number" {
+			if tt.name != "Failed: offset must be a number and greater than 0 or equal to 0" {
 				assert.NoError(t, err)
 			}
 			

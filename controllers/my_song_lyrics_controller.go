@@ -29,7 +29,7 @@ func (my *MySongLyrics) GetSongLyrics(c echo.Context) error {
 
 	if err != nil {
 		return echo.NewHTTPError(http.StatusBadRequest, echo.Map{
-			"message": "offset must be a number",
+			"message": "offset must be a number and greater than 0 or equal to 0",
 		})
 	}
 
@@ -61,7 +61,7 @@ func (my *MySongLyrics) GetSongLyric(c echo.Context) error {
 	
 	if err != nil {
 		return echo.NewHTTPError(http.StatusBadRequest, echo.Map{
-			"message": "id must be a number",
+			"message": "id must be a number and greater than 0 or equal to 0",
 		})
 	}
 
@@ -125,7 +125,7 @@ func (my *MySongLyrics) SearchSongLyrics(c echo.Context) error {
 
 	if err != nil {
 		return echo.NewHTTPError(http.StatusBadRequest, echo.Map{
-			"message": "offset must be a number",
+			"message": "offset must be a number and greater than 0 or equal to 0",
 		})
 	}
 	
@@ -171,7 +171,7 @@ func (my *MySongLyrics) DeleteSongLyric(c echo.Context) error {
 
 	if err != nil {
 		return echo.NewHTTPError(http.StatusBadRequest, echo.Map{
-			"message": "id must be a number",
+			"message": "id must be a number and greater than 0 or equal to 0",
 		})
 	}
 
@@ -207,7 +207,7 @@ func (my *MySongLyrics) UpdateSongLyric(c echo.Context) error {
 
 	if err != nil {
 		return echo.NewHTTPError(http.StatusBadRequest, echo.Map{
-			"message": "id must be a number",
+			"message": "id must be a number and greater than 0 or equal to 0",
 		})
 	}
 	

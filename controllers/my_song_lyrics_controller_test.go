@@ -51,11 +51,11 @@ func TestGetSongLyrics(t *testing.T){
 			wantErr:      false,
 		},
 		{
-			name: "Failed: offset must be a number",
+			name: "Failed: offset must be a number and greater than 0 or equal to 0",
 			param: "?offset=abc",
 			expectedCode: http.StatusBadRequest,
 			expectedBody: echo.Map{
-				"message": "offset must be a number",
+				"message": "offset must be a number and greater than 0 or equal to 0",
 			},
 			wantErr:      true,
 		},
@@ -90,7 +90,7 @@ func TestGetSongLyrics(t *testing.T){
 			
 			offsetInt, err := utils.CheckOffset(offset)
 
-			if tt.name != "Failed: offset must be a number" {
+			if tt.name != "Failed: offset must be a number and greater than 0 or equal to 0" {
 				assert.NoError(t, err)
 			}
 
@@ -167,11 +167,11 @@ func TestGetSongLyric(t *testing.T){
 			wantErr:      false,
 		},
 		{
-			name: "Failed: id must be a number",
+			name: "Failed: id must be a number and greater than 0 or equal to 0",
 			idSongLyric: "abc",
 			expectedCode: http.StatusBadRequest,
 			expectedBody: echo.Map{
-				"message": "id must be a number",
+				"message": "id must be a number and greater than 0 or equal to 0",
 			},
 			wantErr:      true,
 		},
@@ -208,7 +208,7 @@ func TestGetSongLyric(t *testing.T){
 			
 			num, err := utils.CheckId(tt.idSongLyric)
 			
-			if tt.name != "Failed: id must be a number" {
+			if tt.name != "Failed: id must be a number and greater than 0 or equal to 0" {
 				assert.NoError(t,err)
 			}
 
@@ -419,11 +419,11 @@ func TestSearchSongLyrics(t *testing.T){
 			wantErr:      false,
 		},
 		{
-			name: "Failed: offset must be a number",
+			name: "Failed: offset must be a number and greater than 0 or equal to 0",
 			param: "?title=test&artist_names=test&lyric=test&offset=abc",
 			expectedCode: http.StatusBadRequest,
 			expectedBody: echo.Map{
-				"message": "offset must be a number",
+				"message": "offset must be a number and greater than 0 or equal to 0",
 			},
 			wantErr:      true,
 		},
@@ -471,7 +471,7 @@ func TestSearchSongLyrics(t *testing.T){
 
 			offsetInt, err := utils.CheckOffset(offset)
 
-			if tt.name != "Failed: offset must be a number" {
+			if tt.name != "Failed: offset must be a number and greater than 0 or equal to 0" {
 				assert.NoError(t, err)
 			}
 			
@@ -543,11 +543,11 @@ func TestDeleteSongLyric(t *testing.T) {
 			wantErr:      false,
 		},
 		{
-			name: "Failed: id must be a number",
+			name: "Failed: id must be a number and greater than 0 or equal to 0",
 			expectedCode: http.StatusBadRequest,
 			idSongLyric: "abc",
 			expectedBody: echo.Map{
-				"message": "id must be a number",
+				"message": "id must be a number and greater than 0 or equal to 0",
 			},
 			wantErr:      true,
 		},
@@ -593,7 +593,7 @@ func TestDeleteSongLyric(t *testing.T) {
 			
 			idSongLyricInt, err := utils.CheckId(tt.idSongLyric)
 
-			if tt.name != "Failed: id must be a number" {
+			if tt.name != "Failed: id must be a number and greater than 0 or equal to 0" {
 				assert.NoError(t, err)
 			}
 
@@ -663,7 +663,7 @@ func TestUpdateSongLyric(t *testing.T) {
 			wantErr:      false,
 		},
 		{
-			name: "Failed: id must be a number",
+			name: "Failed: id must be a number and greater than 0 or equal to 0",
 			idSongLyric: "abc",
 			payload: models.SongLyricWrite{
 				Title: "test",
@@ -671,7 +671,7 @@ func TestUpdateSongLyric(t *testing.T) {
 			},
 			expectedCode: http.StatusBadRequest,
 			expectedBody: echo.Map{
-				"message": "id must be a number",
+				"message": "id must be a number and greater than 0 or equal to 0",
 			},
 			wantErr:      true,
 		},
@@ -727,7 +727,7 @@ func TestUpdateSongLyric(t *testing.T) {
 			
 			idSongLyricInt, err := utils.CheckId(tt.idSongLyric)
 
-			if tt.name != "Failed: id must be a number" {
+			if tt.name != "Failed: id must be a number and greater than 0 or equal to 0" {
 				assert.NoError(t, err)
 			}
 
