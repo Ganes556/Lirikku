@@ -8,7 +8,7 @@ import (
 )
 
 
-func CheckOffset(offset string) (int, error) {
+func CheckOffset(offset string) int {
 	if offset == "" {
 		offset = "0"
 	}
@@ -16,21 +16,20 @@ func CheckOffset(offset string) (int, error) {
 	offsetInt, err := strconv.Atoi(offset)
 
 	if err != nil || offsetInt < 0{
-		return 0, err
+		return -1
 	}
-	
 
-	return offsetInt, nil
+	return offsetInt
 }
 
-func CheckId(id string) (int, error) {
+func CheckId(id string) int {
 	idInt, err := strconv.Atoi(id)
 
 	if err != nil || idInt < 0{
-		return 0, err
+		return -1
 	}
 
-	return idInt, nil
+	return idInt
 }
 
 
