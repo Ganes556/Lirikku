@@ -95,7 +95,7 @@ func (my *MySongLyrics) SaveSongLyric(c echo.Context) error {
 	err := my.service.CheckSongLyric(user.ID, reqSongLyricWrite)
 
 	if err != nil {
-		return echo.NewHTTPError(http.StatusBadRequest, echo.Map{
+		return echo.NewHTTPError(http.StatusConflict, echo.Map{
 			"message": err.Error(),
 		})
 	}

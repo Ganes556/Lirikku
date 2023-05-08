@@ -31,7 +31,7 @@ func (a *Auth) Register(c echo.Context) error {
 	err := a.service.CheckUserEmail(reqAuth.Email)
 	
 	if err != nil {
-		return echo.NewHTTPError(http.StatusBadRequest, echo.Map{
+		return echo.NewHTTPError(http.StatusConflict, echo.Map{
 			"message": err.Error(),
 		})
 	}
