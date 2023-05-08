@@ -31,7 +31,10 @@ jobs:
 
   deploy-lirikku:
     runs-on: ubuntu-latest
+    needs: push-to-docker-hub
     steps:
+      - name: Check out the repo
+        uses: actions/checkout@v3
       - name: Deploy to server
         uses: appleboy/ssh-action@v0.1.10
         with:

@@ -25,11 +25,11 @@ func (my *MySongLyrics) GetSongLyrics(c echo.Context) error {
 
 	offset := c.QueryParam("offset")
 
-	offsetInt, err := utils.CheckOffset(offset)
-
-	if err != nil {
+	offsetInt := utils.CheckOffset(offset)
+	
+	if offsetInt == -1 {
 		return echo.NewHTTPError(http.StatusBadRequest, echo.Map{
-			"message": "offset must be a number",
+			"message": "offset must be a number and greater than 0 or equal to 0",
 		})
 	}
 
@@ -57,11 +57,11 @@ func (my *MySongLyrics) GetSongLyric(c echo.Context) error {
 	
 	idSongLyric := c.Param("id")
 	
-	idSongLyricInt, err := utils.CheckId(idSongLyric)
+	idSongLyricInt := utils.CheckId(idSongLyric)
 	
-	if err != nil {
+	if idSongLyricInt == -1{
 		return echo.NewHTTPError(http.StatusBadRequest, echo.Map{
-			"message": "id must be a number",
+			"message": "id must be a number and greater than 0 or equal to 0",
 		})
 	}
 
@@ -120,12 +120,11 @@ func (my *MySongLyrics) SearchSongLyrics(c echo.Context) error {
 	
 	offset := c.QueryParam("offset")
 
-	offsetInt, err := utils.CheckOffset(offset)
+	offsetInt := utils.CheckOffset(offset)
 	
-
-	if err != nil {
+	if offsetInt == -1 {
 		return echo.NewHTTPError(http.StatusBadRequest, echo.Map{
-			"message": "offset must be a number",
+			"message": "offset must be a number and greater than 0 or equal to 0",
 		})
 	}
 	
@@ -167,15 +166,15 @@ func (my *MySongLyrics) DeleteSongLyric(c echo.Context) error {
 	
 	idSongLyric := c.Param("id")
 
-	idSongLyricInt, err := utils.CheckId(idSongLyric)
+	idSongLyricInt := utils.CheckId(idSongLyric)
 
-	if err != nil {
+	if idSongLyricInt == -1 {
 		return echo.NewHTTPError(http.StatusBadRequest, echo.Map{
-			"message": "id must be a number",
+			"message": "id must be a number and greater than 0 or equal to 0",
 		})
 	}
 
-	_, err = my.service.GetSongLyric(idSongLyricInt, user.ID)
+	_, err := my.service.GetSongLyric(idSongLyricInt, user.ID)
 	
 	if err != nil {
 		return echo.NewHTTPError(http.StatusNotFound, echo.Map{
@@ -203,15 +202,15 @@ func (my *MySongLyrics) UpdateSongLyric(c echo.Context) error {
 	
 	idSongLyric := c.Param("id")
 
-	idSongLyricInt, err := utils.CheckId(idSongLyric)
+	idSongLyricInt := utils.CheckId(idSongLyric)
 
-	if err != nil {
+	if idSongLyricInt == -1 {
 		return echo.NewHTTPError(http.StatusBadRequest, echo.Map{
-			"message": "id must be a number",
+			"message": "id must be a number and greater than 0 or equal to 0",
 		})
 	}
 	
-	_, err = my.service.GetSongLyric(idSongLyricInt, user.ID)
+	_, err := my.service.GetSongLyric(idSongLyricInt, user.ID)
 
 	if err != nil {
 		return echo.NewHTTPError(http.StatusNotFound, echo.Map{
