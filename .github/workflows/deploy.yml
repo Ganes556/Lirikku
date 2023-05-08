@@ -1,13 +1,9 @@
 name: Deploy
 
 on:
-  push:
-    branches:
-      - master
-
   pull_request:
     branches:
-      - dev
+      - master
 
 jobs:
   push-to-docker-hub:
