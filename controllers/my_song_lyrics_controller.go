@@ -142,6 +142,12 @@ func (my *MySongLyrics) SearchSongLyrics(c echo.Context) error {
 		})
 	}
 
+	if len(resSongLyrics) == 0 {
+		return echo.NewHTTPError(http.StatusNotFound, echo.Map{
+			"message": "song lyric not found",
+		})
+	}
+
 	next := utils.GenerateNextLink(c, len(resSongLyrics), url.Values{
 		"title": {title},
 		"lyric": {lyric},
