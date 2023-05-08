@@ -290,7 +290,7 @@ func TestSaveSongLyric(t *testing.T){
 				ArtistNames: "test",
 				Lyric: "test",
 			},
-			expectedCode: http.StatusBadRequest,
+			expectedCode: http.StatusConflict,
 			expectedBody: echo.Map{
 				"message": "song lyric already saved",
 			},
@@ -357,7 +357,7 @@ func TestSaveSongLyric(t *testing.T){
 			if tt.wantErr {
 				if tt.name != "Failed: internal server error (SaveSongLyric)" {
 					mockMySongLyricsRepo.On("CheckSongLyric", user.ID, tt.payload).Return(errors.New(tt.expectedBody["message"].(string))).Once()
-				}else {
+				}else{
 					mockMySongLyricsRepo.On("CheckSongLyric", user.ID, tt.payload).Return(nil).Once()
 					mockMySongLyricsRepo.On("SaveSongLyric", user.ID, tt.payload).Return(errors.New(tt.expectedBody["message"].(string))).Once()
 				}

@@ -52,7 +52,7 @@ func TestRegister(t *testing.T) {
 			expectedBody: echo.Map{
 				"message": "email already registered",
 			},
-			expectedCode: http.StatusBadRequest,
+			expectedCode: http.StatusConflict,
 			wantErr:      true,
 		},
 		{
