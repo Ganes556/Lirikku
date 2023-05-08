@@ -436,6 +436,15 @@ func TestSearchSongLyrics(t *testing.T){
 			},
 			wantErr:      true,
 		},
+		{
+			name: "Failed: song lyric not found",
+			param: "?title=not+found&artist_names=not+found&lyric=not+found",
+			expectedCode: http.StatusNotFound,
+			expectedBody: echo.Map{
+				"message": "song lyric not found",
+			},
+			wantErr:      true,
+		},
 	}
 
 	for _, tt := range tests {
@@ -469,7 +478,11 @@ func TestSearchSongLyrics(t *testing.T){
 			var data []models.SongLyricResponse
 
 			if tt.wantErr {
-				mockMySongLyricsRepo.On("SearchSongLyrics", user.ID, title, lyric, artistNames, offsetInt).Return(data, errors.New(tt.expectedBody["message"].(string))).Once()
+				if tt.name == "Failed: song lyric not found" {
+					mockMySongLyricsRepo.On("SearchSongLyrics", user.ID, title, lyric, artistNames, offsetInt).Return(data, nil).Once()
+				}else {
+					mockMySongLyricsRepo.On("SearchSongLyrics", user.ID, title, lyric, artistNames, offsetInt).Return(data, errors.New(tt.expectedBody["message"].(string))).Once()
+				}
 			}else {
 				data = append(data, tt.expectedBody["my_song_lyrics"].([]models.SongLyricResponse)...)
 
