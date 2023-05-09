@@ -55,7 +55,6 @@ func (pub *PublicSongLyrics) SearchAudioSongLyric(c echo.Context) error {
 
 	isAudio := utils.CheckAudioFile(audioData)
 	if !isAudio {
-		// log.Println(isAudio)
 		return echo.NewHTTPError(http.StatusBadRequest, echo.Map{
 			"message": "invalid file type. please upload an audio file",
 		})
@@ -73,7 +72,7 @@ func (pub *PublicSongLyrics) SearchAudioSongLyric(c echo.Context) error {
 	
 	if err != nil {
 		return echo.NewHTTPError(http.StatusNotFound, echo.Map{
-			"message": "song lyric not found",
+			"message": err.Error(),
 		})
 	}
 
