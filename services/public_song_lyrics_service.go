@@ -1,6 +1,7 @@
 package services
 
 import (
+	"errors"
 	"strconv"
 	"sync"
 
@@ -70,7 +71,7 @@ func (pub *PublicSongLyricsRepo) SearchSongLyricByAudioRapidShazam(rawBases64 st
 	res, err := utils.RequestShazamSearchAudio(rawBases64)
 	
 	if err != nil || res.Track.Key == "" {
-		return models.PublicSongLyricResponse{}, err
+		return models.PublicSongLyricResponse{}, errors.New("song lyric not found")
 	}
 
 	return res.GetInPublicSongLyricResponse(), nil
