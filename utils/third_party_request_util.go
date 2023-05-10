@@ -83,7 +83,6 @@ func RequestShazamSearchKey(key string) (models.ShazamSearchKeyResponse, error) 
 func RequestShazamSearchAudio(rawBase64 string) (models.RapidShazamSearchAudioResponse, error) {
 	
 	urlShazamSearchAudio := "https://shazam.p.rapidapi.com/songs/v2/detect"
-	// urlShazamSearchAudio := "https://www.shazam.com/services/webrec/match"
 	
 	client := &http.Client{
 		Timeout: time.Duration(10) * time.Second,

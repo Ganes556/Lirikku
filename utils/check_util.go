@@ -7,20 +7,6 @@ import (
 	"github.com/h2non/filetype"
 )
 
-// func CheckOffset(offset string) int {
-// 	if offset == "" {
-// 		offset = "0"
-// 	}
-
-// 	offsetInt, err := strconv.Atoi(offset)
-
-// 	if err != nil || offsetInt < 0{
-// 		return -1
-// 	}
-
-// 	return offsetInt
-// }
-
 func CheckId(id string) int {
 	idInt, _ := strconv.Atoi(id)
 	
@@ -30,20 +16,6 @@ func CheckId(id string) int {
 	
 	return idInt
 }
-
-// func CheckLimit(limit string) int {
-// 	if limit == "" {
-// 		limit = "5"
-// 	}
-
-// 	limitInt, err := strconv.Atoi(limit)
-
-// 	if err != nil || limitInt < 1{
-// 		return -1
-// 	}
-
-// 	return limitInt
-// }
 
 func CheckAudioFile(fh *multipart.FileHeader) bool {
 	file, err := fh.Open()
