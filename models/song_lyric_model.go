@@ -11,7 +11,7 @@ type SongLyric struct {
 }
 
 type SongLyricWrite struct {
-	ArtistNames string `json:"artist_names" validate:"required,ascii"`
+	ArtistNames string `json:"artist_names" validate:"required"`
 	Title   string   `json:"title" validate:"required"`
 	Lyric   string   `json:"lyric" validate:"required"`
 }
