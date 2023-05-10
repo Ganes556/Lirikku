@@ -2,8 +2,6 @@ package controllers
 
 import (
 	"net/http"
-	"net/url"
-	"strconv"
 
 	"github.com/Lirikku/services"
 	"github.com/Lirikku/utils"
@@ -20,17 +18,10 @@ func NewPublicSongLyricsController(service services.IPublicSongLyricsService) *P
 
 func (pub *PublicSongLyrics) SearchTermSongLyrics(c echo.Context) error {
 	term := c.QueryParam("term")
-	offset := c.QueryParam("offset")
 	
-	offsetInt := utils.CheckOffset(offset)
-
-	if offsetInt == -1 {
-		return echo.NewHTTPError(http.StatusBadRequest, echo.Map{
-			"message": "offset must be a number and greater than 0 or equal to 0",
-		})
-	}
-
-	resPublicSongLyrics, err := pub.service.SearchSongLyricsByTermShazam(term, "artists,songs", "5", offsetInt)
+	pageSize, offset := utils.GetPageSizeAndOffset(c)
+	
+	resPublicSongLyrics, err := pub.service.SearchSongLyricsByTermShazam(term, "artists,songs", offset, pageSize)
 	
 	if err != nil {
 		return echo.NewHTTPError(http.StatusInternalServerError, echo.Map{
@@ -38,13 +29,7 @@ func (pub *PublicSongLyrics) SearchTermSongLyrics(c echo.Context) error {
 		})
 	}
 
-	next := utils.GenerateNextLink(c, len(resPublicSongLyrics), url.Values{
-		"term": {term},
-		"offset": {strconv.Itoa(offsetInt + 5)},
-	}.Encode())
-
 	return c.JSON(http.StatusOK, echo.Map{
-		"next": next,
 		"public_song_lyrics": resPublicSongLyrics,
 	})
 
