@@ -9,8 +9,8 @@ type MockMySongLyricsRepo struct {
 	mock.Mock
 }
 
-func (m *MockMySongLyricsRepo) GetSongLyrics(userID uint, offset int) ([]models.SongLyricResponse, error) {
-	args := m.Called(userID, offset)
+func (m *MockMySongLyricsRepo) GetSongLyrics(userID uint, offset, pageSize int) ([]models.SongLyricResponse, error) {
+	args := m.Called(userID, offset, pageSize)
 	return args.Get(0).([]models.SongLyricResponse), args.Error(1)
 }
 
@@ -29,8 +29,8 @@ func (m *MockMySongLyricsRepo) SaveSongLyric(userID uint, req models.SongLyricWr
 	return args.Error(0)
 }
 
-func (m *MockMySongLyricsRepo) SearchSongLyrics(userID uint, title, lyric, artist_names string, offset int) ([]models.SongLyricResponse,error){
-	args := m.Called(userID, title, lyric, artist_names, offset)
+func (m *MockMySongLyricsRepo) SearchSongLyrics(userID uint, title, lyric, artist_names string, offset, pageSize int) ([]models.SongLyricResponse,error){
+	args := m.Called(userID, title, lyric, artist_names, offset, pageSize)
 	return args.Get(0).([]models.SongLyricResponse), args.Error(1)
 }
 

@@ -2,9 +2,11 @@ package utils
 
 import (
 	"encoding/json"
+	"fmt"
 	"net/http"
 	"net/url"
 	"os"
+	"strconv"
 	"strings"
 	"time"
 
@@ -12,21 +14,21 @@ import (
 )
 
 
-func RequestShazamSearchTerm(term, offset, types, limit string) (models.ShazamSearchTermResponse, error) {
-
+func RequestShazamSearchTerm(term, types string, offset, pageSize int) (models.ShazamSearchTermResponse, error) {
+	
 	urlShazamSearchKey := "https://www.shazam.com/services/search/v4/id/ID/web/search"
-
+	
 	client := &http.Client{
 		Timeout: time.Duration(10) * time.Second,
 	}
-
+	
 	query := url.Values{
 		"term": {term},
-		"offset": {offset},
+		"offset": {strconv.Itoa(offset)},
 		"types": {types},
-		"limit": {limit},
+		"limit": {strconv.Itoa(pageSize)},
 	}.Encode()
-
+		
 	req, err := http.NewRequest("GET", urlShazamSearchKey+"?"+query, nil)
 
 	if err != nil {
@@ -85,7 +87,7 @@ func RequestShazamSearchAudio(rawBase64 string) (models.RapidShazamSearchAudioRe
 	client := &http.Client{
 		Timeout: time.Duration(10) * time.Second,
 	}
-	
+	fmt.Println("rawBase64", rawBase64)
 	req, err := http.NewRequest("POST", urlShazamSearchAudio, strings.NewReader(rawBase64))
 	req.Header.Add("content-type", "text/plain")
 	req.Header.Add("X-RapidAPI-Key", os.Getenv("RAPID_SHAZAM_API_KEY"))

@@ -2,8 +2,6 @@ package controllers
 
 import (
 	"net/http"
-	"net/url"
-	"strconv"
 
 	"github.com/Lirikku/models"
 	"github.com/Lirikku/services"
@@ -22,31 +20,19 @@ func NewMySongLyricsController(service services.IMySongLyricsService) *MySongLyr
 func (my *MySongLyrics) GetSongLyrics(c echo.Context) error {
 
 	user := c.Get("user").(models.UserJWTDecode)
-
-	offset := c.QueryParam("offset")
-
-	offsetInt := utils.CheckOffset(offset)
 	
-	if offsetInt == -1 {
-		return echo.NewHTTPError(http.StatusBadRequest, echo.Map{
-			"message": "offset must be a number and greater than 0 or equal to 0",
-		})
-	}
-
-	resSongLyrics, err := my.service.GetSongLyrics(user.ID,offsetInt)
+	pageSize, offset := utils.GetPageSizeAndOffset(c)
+	
+	resSongLyrics, err := my.service.GetSongLyrics(user.ID, offset, pageSize)
 	
 	if err != nil {
 		return echo.NewHTTPError(http.StatusInternalServerError, echo.Map{
 			"message": "internal server error",
 		})
 	}
-	
-	next := utils.GenerateNextLink(c, len(resSongLyrics), url.Values{
-		"offset": {strconv.Itoa(offsetInt + 5)},
-	}.Encode())
 
+	
 	return c.JSON(http.StatusOK, echo.Map{
-		"next": next,
 		"my_song_lyrics": resSongLyrics,
 	})
 }
@@ -61,7 +47,7 @@ func (my *MySongLyrics) GetSongLyric(c echo.Context) error {
 	
 	if idSongLyricInt == -1{
 		return echo.NewHTTPError(http.StatusBadRequest, echo.Map{
-			"message": "id must be a number and greater than 0 or equal to 0",
+			"message": "id must be a number and greater than 0",
 		})
 	}
 
@@ -118,22 +104,13 @@ func (my *MySongLyrics) SearchSongLyrics(c echo.Context) error {
 
 	user := c.Get("user").(models.UserJWTDecode)
 	
-	offset := c.QueryParam("offset")
-
-	offsetInt := utils.CheckOffset(offset)
-	
-	if offsetInt == -1 {
-		return echo.NewHTTPError(http.StatusBadRequest, echo.Map{
-			"message": "offset must be a number and greater than 0 or equal to 0",
-		})
-	}
-	
+	pageSize, offset := utils.GetPageSizeAndOffset(c)
 	
 	title := c.QueryParam("title")
 	lyric := c.QueryParam("lyric")
 	artist_names:= c.QueryParam("artist_names")
 	
-	resSongLyrics, err := my.service.SearchSongLyrics(user.ID, title, lyric, artist_names, offsetInt)
+	resSongLyrics, err := my.service.SearchSongLyrics(user.ID, title, lyric, artist_names, offset, pageSize)
 	
 	if err != nil {
 		return echo.NewHTTPError(http.StatusInternalServerError, echo.Map{
@@ -147,15 +124,7 @@ func (my *MySongLyrics) SearchSongLyrics(c echo.Context) error {
 		})
 	}
 
-	next := utils.GenerateNextLink(c, len(resSongLyrics), url.Values{
-		"title": {title},
-		"lyric": {lyric},
-		"artist_names": {artist_names},
-		"offset": {strconv.Itoa(offsetInt + 5)},
-	}.Encode())
-
 	return c.JSON(http.StatusOK, echo.Map{
-		"next": next,
 		"my_song_lyrics": resSongLyrics,
 	})
 }
@@ -170,7 +139,7 @@ func (my *MySongLyrics) DeleteSongLyric(c echo.Context) error {
 
 	if idSongLyricInt == -1 {
 		return echo.NewHTTPError(http.StatusBadRequest, echo.Map{
-			"message": "id must be a number and greater than 0 or equal to 0",
+			"message": "id must be a number and greater than 0",
 		})
 	}
 
@@ -206,7 +175,7 @@ func (my *MySongLyrics) UpdateSongLyric(c echo.Context) error {
 
 	if idSongLyricInt == -1 {
 		return echo.NewHTTPError(http.StatusBadRequest, echo.Map{
-			"message": "id must be a number and greater than 0 or equal to 0",
+			"message": "id must be a number and greater than 0",
 		})
 	}
 	

@@ -2,7 +2,6 @@ package services
 
 import (
 	"errors"
-	"strconv"
 	"sync"
 
 	"github.com/Lirikku/models"
@@ -10,7 +9,7 @@ import (
 )
 
 type IPublicSongLyricsService interface {
-	SearchSongLyricsByTermShazam(term, types, limit string, offset int) ([]models.PublicSongLyricResponse, error)
+	SearchSongLyricsByTermShazam(term, types string, offset, pageSize int) ([]models.PublicSongLyricResponse, error)
 	SearchSongLyricByAudioRapidShazam(rawBases64 string) (models.PublicSongLyricResponse, error)
 }
 
@@ -30,9 +29,9 @@ func SetPublicSongLyricsRepo(repo IPublicSongLyricsService) {
 	publicSongLyricsRepo = repo
 }
 
-func (pub *PublicSongLyricsRepo) SearchSongLyricsByTermShazam(term, types, limit string, offset int) ([]models.PublicSongLyricResponse, error) {
-	
-	res, err := utils.RequestShazamSearchTerm(term, strconv.Itoa(offset), types, limit)
+func (pub *PublicSongLyricsRepo) SearchSongLyricsByTermShazam(term, types string, offset, pageSize int) ([]models.PublicSongLyricResponse, error) {
+
+	res, err := utils.RequestShazamSearchTerm(term, types, offset, pageSize)
 
 	if err != nil {
 		return []models.PublicSongLyricResponse{}, err
