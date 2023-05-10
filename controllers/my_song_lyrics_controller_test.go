@@ -6,8 +6,6 @@ import (
 	"errors"
 	"net/http"
 	"net/http/httptest"
-	"net/url"
-	"strconv"
 	"testing"
 
 	"github.com/Lirikku/middlewares"
@@ -28,17 +26,14 @@ func TestGetSongLyrics(t *testing.T){
 
 	tests := []struct {
 		name         string
-		param 			 string
 		expectedBody echo.Map
 		expectedCode int
 		wantErr      bool
 	}{
 		{
 			name: "Success",
-			param: "?offset=1",
 			expectedCode: http.StatusOK,
 			expectedBody: echo.Map{
-				"next": "",
 				"my_song_lyrics": []models.SongLyricResponse{
 					{
 						ID: 1,
@@ -51,17 +46,7 @@ func TestGetSongLyrics(t *testing.T){
 			wantErr:      false,
 		},
 		{
-			name: "Failed: offset must be a number and greater than 0 or equal to 0",
-			param: "?offset=abc",
-			expectedCode: http.StatusBadRequest,
-			expectedBody: echo.Map{
-				"message": "offset must be a number and greater than 0 or equal to 0",
-			},
-			wantErr:      true,
-		},
-		{
 			name: "Failed: internal server error (GetSongLyrics)",
-			param: "?offset=1",
 			expectedCode: http.StatusInternalServerError,
 			expectedBody: echo.Map{
 				"message": "internal server error",
@@ -74,7 +59,7 @@ func TestGetSongLyrics(t *testing.T){
 		t.Run(tt.name, func(t *testing.T) {
 			e := echo.New()
 
-			req := httptest.NewRequest(http.MethodGet, "/song_lyrics/my" + tt.param, nil)
+			req := httptest.NewRequest(http.MethodGet, "/song_lyrics/my", nil)
 			rec := httptest.NewRecorder()
 
 			c := e.NewContext(req, rec)
@@ -86,30 +71,15 @@ func TestGetSongLyrics(t *testing.T){
 			
 			c.Set("user", user)
 
-			offset := c.QueryParam("offset")
-			
-			offsetInt := utils.CheckOffset(offset)
+			pageSize, offset := utils.GetPageSizeAndOffset(c)
 
-			if tt.name != "Failed: offset must be a number and greater than 0 or equal to 0" {
-				assert.NotEqual(t, offsetInt, -1)
-			}
 
 			var data []models.SongLyricResponse
 			if tt.wantErr {
-				mockMySongLyricsRepo.On("GetSongLyrics", user.ID, offsetInt).Return(data,errors.New(tt.expectedBody["message"].(string))).Once()
+				mockMySongLyricsRepo.On("GetSongLyrics", user.ID, offset, pageSize).Return(data,errors.New(tt.expectedBody["message"].(string))).Once()
 			}else {
-				data = append(data, models.SongLyricResponse{
-					ID: 1,
-					Title: "test",
-					ArtistNames: "test",
-					Lyric: "test",
-				})
-
-				tt.expectedBody["next"] = utils.GenerateNextLink(c, len(data), url.Values{
-					"offset": {strconv.Itoa(offsetInt + 5)},
-				}.Encode())
-				
-				mockMySongLyricsRepo.On("GetSongLyrics", user.ID, offsetInt).Return(data, nil).Once()
+				data = tt.expectedBody["my_song_lyrics"].([]models.SongLyricResponse)
+				mockMySongLyricsRepo.On("GetSongLyrics", user.ID, offset, pageSize).Return(data, nil).Once()
 
 			}
 
@@ -132,7 +102,6 @@ func TestGetSongLyrics(t *testing.T){
 				err = json.Unmarshal(rec.Body.Bytes(), &ret)
 				assert.NoError(t, err)
 				assert.Equal(t, tt.expectedCode, rec.Code)
-				assert.Equal(t, tt.expectedBody["next"], ret.Next)
 				assert.Equal(t, tt.expectedBody["my_song_lyrics"], ret.MySongLyrics)
 			}
 
@@ -167,11 +136,11 @@ func TestGetSongLyric(t *testing.T){
 			wantErr:      false,
 		},
 		{
-			name: "Failed: id must be a number and greater than 0 or equal to 0",
+			name: "Failed: id must be a number and greater than 0",
 			idSongLyric: "abc",
 			expectedCode: http.StatusBadRequest,
 			expectedBody: echo.Map{
-				"message": "id must be a number and greater than 0 or equal to 0",
+				"message": "id must be a number and greater than 0",
 			},
 			wantErr:      true,
 		},
@@ -208,7 +177,7 @@ func TestGetSongLyric(t *testing.T){
 			
 			idSongLyricInt := utils.CheckId(tt.idSongLyric)
 			
-			if tt.name != "Failed: id must be a number and greater than 0 or equal to 0" {
+			if tt.name != "Failed: id must be a number and greater than 0" {
 				assert.NotEqual(t,idSongLyricInt, -1)
 			}
 
@@ -406,7 +375,6 @@ func TestSearchSongLyrics(t *testing.T){
 			param: "?title=test&artist_names=test&lyric=test",
 			expectedCode: http.StatusOK,
 			expectedBody: echo.Map{
-				"next": "",
 				"my_song_lyrics": []models.SongLyricResponse{
 					{
 						ID: 1,
@@ -417,15 +385,6 @@ func TestSearchSongLyrics(t *testing.T){
 				},
 			},
 			wantErr:      false,
-		},
-		{
-			name: "Failed: offset must be a number and greater than 0 or equal to 0",
-			param: "?title=test&artist_names=test&lyric=test&offset=abc",
-			expectedCode: http.StatusBadRequest,
-			expectedBody: echo.Map{
-				"message": "offset must be a number and greater than 0 or equal to 0",
-			},
-			wantErr:      true,
 		},
 		{
 			name: "Failed: internal server error (SearchSongLyrics)",
@@ -467,32 +426,19 @@ func TestSearchSongLyrics(t *testing.T){
 			lyric := c.QueryParam("lyric")
 			artistNames := c.QueryParam("artist_names")
 			
-			offset := c.QueryParam("offset")
-
-			offsetInt := utils.CheckOffset(offset)
-
-			if tt.name != "Failed: offset must be a number and greater than 0 or equal to 0" {
-				assert.NotEqual(t, offsetInt, -1)
-			}
+			pageSize, offset := utils.GetPageSizeAndOffset(c)
 			
 			var data []models.SongLyricResponse
 
 			if tt.wantErr {
 				if tt.name == "Failed: song lyric not found" {
-					mockMySongLyricsRepo.On("SearchSongLyrics", user.ID, title, lyric, artistNames, offsetInt).Return(data, nil).Once()
+					mockMySongLyricsRepo.On("SearchSongLyrics", user.ID, title, lyric, artistNames, offset, pageSize).Return(data, nil).Once()
 				}else {
-					mockMySongLyricsRepo.On("SearchSongLyrics", user.ID, title, lyric, artistNames, offsetInt).Return(data, errors.New(tt.expectedBody["message"].(string))).Once()
+					mockMySongLyricsRepo.On("SearchSongLyrics", user.ID, title, lyric, artistNames, offset, pageSize).Return(data, errors.New(tt.expectedBody["message"].(string))).Once()
 				}
 			}else {
 				data = append(data, tt.expectedBody["my_song_lyrics"].([]models.SongLyricResponse)...)
-
-				tt.expectedBody["next"] = utils.GenerateNextLink(c, len(data), url.Values{
-					"title": {title},
-					"lyric": {lyric},
-					"artist_names": {artistNames},
-					"offset": {strconv.Itoa(offsetInt + 5)},
-				}.Encode())
-				mockMySongLyricsRepo.On("SearchSongLyrics", user.ID, title, lyric, artistNames, offsetInt).Return(data, nil).Once()
+				mockMySongLyricsRepo.On("SearchSongLyrics", user.ID, title, lyric, artistNames, offset, pageSize).Return(data, nil).Once()
 			}
 
 			err := mySongLyricsController.SearchSongLyrics(c)
@@ -513,7 +459,6 @@ func TestSearchSongLyrics(t *testing.T){
 				err = json.Unmarshal(rec.Body.Bytes(), &ret)
 				assert.NoError(t, err)
 				assert.Equal(t, tt.expectedCode, rec.Code)
-				assert.Equal(t, tt.expectedBody["next"], ret.Next)
 				assert.Equal(t, tt.expectedBody["my_song_lyrics"], ret.MySongLyrics)
 			}
 
@@ -543,11 +488,11 @@ func TestDeleteSongLyric(t *testing.T) {
 			wantErr:      false,
 		},
 		{
-			name: "Failed: id must be a number and greater than 0 or equal to 0",
+			name: "Failed: id must be a number and greater than 0",
 			expectedCode: http.StatusBadRequest,
 			idSongLyric: "abc",
 			expectedBody: echo.Map{
-				"message": "id must be a number and greater than 0 or equal to 0",
+				"message": "id must be a number and greater than 0",
 			},
 			wantErr:      true,
 		},
@@ -593,7 +538,7 @@ func TestDeleteSongLyric(t *testing.T) {
 			
 			idSongLyricInt := utils.CheckId(tt.idSongLyric)
 
-			if tt.name != "Failed: id must be a number and greater than 0 or equal to 0" {
+			if tt.name != "Failed: id must be a number and greater than 0" {
 				assert.NotEqual(t, idSongLyricInt, -1)
 			}
 
@@ -663,7 +608,7 @@ func TestUpdateSongLyric(t *testing.T) {
 			wantErr:      false,
 		},
 		{
-			name: "Failed: id must be a number and greater than 0 or equal to 0",
+			name: "Failed: id must be a number and greater than 0",
 			idSongLyric: "abc",
 			payload: models.SongLyricWrite{
 				Title: "test",
@@ -671,7 +616,7 @@ func TestUpdateSongLyric(t *testing.T) {
 			},
 			expectedCode: http.StatusBadRequest,
 			expectedBody: echo.Map{
-				"message": "id must be a number and greater than 0 or equal to 0",
+				"message": "id must be a number and greater than 0",
 			},
 			wantErr:      true,
 		},
@@ -727,7 +672,7 @@ func TestUpdateSongLyric(t *testing.T) {
 			
 			idSongLyricInt := utils.CheckId(tt.idSongLyric)
 
-			if tt.name != "Failed: id must be a number and greater than 0 or equal to 0" {
+			if tt.name != "Failed: id must be a number and greater than 0" {
 				assert.NotEqual(t, idSongLyricInt, -1)
 			}
 

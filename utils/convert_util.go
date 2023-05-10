@@ -5,6 +5,7 @@ import (
 	"encoding/base64"
 	"io"
 	"mime/multipart"
+	"strconv"
 
 	"github.com/Lirikku/libs"
 )
@@ -33,4 +34,8 @@ func Audio2RawBase64(data *multipart.FileHeader) string {
 	
 	return rawBase64
 	
+}
+
+func Int2String(i int) string {
+	return strconv.Itoa(i)
 }

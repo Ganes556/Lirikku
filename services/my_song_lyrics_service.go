@@ -8,11 +8,11 @@ import (
 )
 
 type IMySongLyricsService interface {
-	GetSongLyrics(userID uint, offset int) ([]models.SongLyricResponse, error)
+	GetSongLyrics(userID uint, offset, pageSize int) ([]models.SongLyricResponse, error)
 	GetSongLyric(idSongLyric int,userID uint) (models.SongLyricResponse, error)
 	CheckSongLyric(userID uint, req models.SongLyricWrite) error 
 	SaveSongLyric(userID uint, req models.SongLyricWrite) error
-	SearchSongLyrics(userID uint, title, lyric, artist_names string, offset int) ([]models.SongLyricResponse,error)
+	SearchSongLyrics(userID uint, title, lyric, artist_names string, offset, pageSize int) ([]models.SongLyricResponse,error)
 	DeleteSongLyric(idSongLyric int, userID uint) error
 	UpdateSongLyric(idSongLyric int, userID uint, req models.SongLyricWrite) error
 }
@@ -33,16 +33,18 @@ func SetMySongLyricsRepo(repo IMySongLyricsService) {
 	mySongLyricsRepo = repo
 }
 
-func (my *MySongLyricsRepo) GetSongLyrics(userID uint, offset int) ([]models.SongLyricResponse, error) {
+func (my *MySongLyricsRepo) GetSongLyrics(userID uint, offset, pageSize int) ([]models.SongLyricResponse, error) {
 	var res []models.SongLyricResponse
-	err:= configs.DB.Model(&models.SongLyric{}).Limit(5).Offset(offset).Find(&res, "user_id = ?", userID).Error
+	
+	err := configs.DB.Model(&models.SongLyric{}).Limit(pageSize).Offset(offset).Find(&res, "user_id = ?", userID).Error
+	
 	if err != nil {
 		return res, err
 	}
 	return res, nil
 }
 
-func (my *MySongLyricsRepo) GetSongLyric(idSongLyric int,userID uint) (models.SongLyricResponse, error){
+func (my *MySongLyricsRepo) GetSongLyric(idSongLyric int, userID uint) (models.SongLyricResponse, error){
 	var res models.SongLyricResponse
 	
 	err := configs.DB.Model(&models.SongLyric{}).First(&res, "id = ? AND user_id = ?", idSongLyric, userID).Error
@@ -52,7 +54,7 @@ func (my *MySongLyricsRepo) GetSongLyric(idSongLyric int,userID uint) (models.So
 	return res, nil
 }
 
-func (my *MySongLyricsRepo) CheckSongLyric(userID uint,req models.SongLyricWrite) error {
+func (my *MySongLyricsRepo) CheckSongLyric(userID uint, req models.SongLyricWrite) error {
 	
 	err := configs.DB.First(&models.SongLyric{}, "user_id = ? AND title = ? AND lyric = ? AND artist_names = ?", userID, req.Title, req.Lyric, req.ArtistNames).Error
 
@@ -79,11 +81,11 @@ func (my *MySongLyricsRepo) SaveSongLyric(userID uint, req models.SongLyricWrite
 	return nil
 }
 
-func (my *MySongLyricsRepo) SearchSongLyrics(userID uint, title, lyric, artist_names string, offset int) ([]models.SongLyricResponse,error) {
+func (my *MySongLyricsRepo) SearchSongLyrics(userID uint, title, lyric, artist_names string, offset, pageSize int) ([]models.SongLyricResponse,error) {
 
 	var resSongLyrics []models.SongLyricResponse
 
-	err := configs.DB.Model(&models.SongLyric{}).Where("user_id = ? AND title LIKE ? AND lyric LIKE ? AND artist_names LIKE ?", userID, "%"+title+"%", "%"+lyric+"%", "%"+artist_names+"%").Limit(5).Offset(offset).Find(&resSongLyrics).Error
+	err := configs.DB.Model(&models.SongLyric{}).Where("user_id = ? AND title LIKE ? AND lyric LIKE ? AND artist_names LIKE ?", userID, "%"+title+"%", "%"+lyric+"%", "%"+artist_names+"%").Limit(pageSize).Offset(offset).Find(&resSongLyrics).Error
 
 	if err != nil {
 		return resSongLyrics, err

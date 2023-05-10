@@ -8,9 +8,7 @@ import (
 	"mime/multipart"
 	"net/http"
 	"net/http/httptest"
-	"net/url"
 	"os"
-	"strconv"
 	"testing"
 
 	"github.com/Lirikku/models"
@@ -22,20 +20,18 @@ import (
 )
 
 func TestSearchTermSongLyrics(t *testing.T) {
-	mockPubSongLyricsRepo := mockService.MockPublicSongLyricsRepo{}	
+	mockPubSongLyricsRepo := mockService.MockPublicSongLyricsRepo{}
 	services.SetPublicSongLyricsRepo(&mockPubSongLyricsRepo)
 	pubSongLyricsController := NewPublicSongLyricsController(&mockPubSongLyricsRepo)
-	
+
 	tests := []struct {
 		name         string
-		param 			 string
 		expectedBody echo.Map
 		expectedCode int
 		wantErr      bool
 	}{
 		{
 			name: "Success",
-			param: "?term=test&offset=0",
 			expectedCode: http.StatusOK,
 			expectedBody: echo.Map{
 				"next": "",
@@ -50,17 +46,7 @@ func TestSearchTermSongLyrics(t *testing.T) {
 			wantErr:      false,
 		},
 		{
-			name: "Failed: offset must be a number and greater than 0 or equal to 0",
-			param: "?term=test&offset=test",
-			expectedCode: http.StatusBadRequest,
-			expectedBody: echo.Map{
-				"message": "offset must be a number and greater than 0 or equal to 0",
-			},
-			wantErr:      true,
-		},
-		{
 			name: "Failed: internal server error (SearchSongLyricsByTermShazam)",
-			param: "?term=test&offset=0",
 			expectedCode: http.StatusInternalServerError,
 			expectedBody: echo.Map{
 				"message": "internal server error",
@@ -72,32 +58,22 @@ func TestSearchTermSongLyrics(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			e := echo.New()
-			req := httptest.NewRequest(http.MethodGet, "/song_lyrics/public/search" + tt.param, nil)
+			req := httptest.NewRequest(http.MethodGet, "/song_lyrics/public/search", nil)
 			rec := httptest.NewRecorder()
 			c := e.NewContext(req, rec)
-			
+
 			term := c.QueryParam("term")
-			offset := c.QueryParam("offset")
-
-			offsetInt := utils.CheckOffset(offset)
-
-			if tt.name != "Failed: offset must be a number and greater than 0 or equal to 0" {
-				assert.NotEqual(t, offsetInt, -1)
-			}
 			
+			pageSize, offset := utils.GetPageSizeAndOffset(c)
+
 			var data []models.PublicSongLyricResponse
 
 			if tt.wantErr {
-				mockPubSongLyricsRepo.On("SearchSongLyricsByTermShazam", term, "artists,songs", "5", offsetInt).Return(data, errors.New(tt.expectedBody["message"].(string))).Once()
+				mockPubSongLyricsRepo.On("SearchSongLyricsByTermShazam", term, "artists,songs", offset, pageSize).Return(data, errors.New(tt.expectedBody["message"].(string))).Once()
 
 			}else {
 				data = append(data, tt.expectedBody["public_song_lyrics"].([]models.PublicSongLyricResponse)...)
-				tt.expectedBody["next"] = utils.GenerateNextLink(c, len(data), url.Values{
-					"term": {term},
-					"offset": {strconv.Itoa(offsetInt + 5)},
-				}.Encode())
-
-				mockPubSongLyricsRepo.On("SearchSongLyricsByTermShazam", term, "artists,songs", "5", offsetInt).Return(data, nil).Once()
+				mockPubSongLyricsRepo.On("SearchSongLyricsByTermShazam", term, "artists,songs", offset, pageSize).Return(data, nil).Once()
 			}
 
 			err := pubSongLyricsController.SearchTermSongLyrics(c)
@@ -110,20 +86,17 @@ func TestSearchTermSongLyrics(t *testing.T) {
 				assert.Equal(t, tt.expectedBody, httpErr.Message)
 			}else {
 				assert.NoError(t, err)
-				
+
 				var ret struct {
-					Next string `json:"next"`
 					PublicSongLryics []models.PublicSongLyricResponse `json:"public_song_lyrics"`
 				}
 				err = json.Unmarshal(rec.Body.Bytes(), &ret)
 
 				assert.NoError(t, err)
 				assert.Equal(t, tt.expectedCode, rec.Code)
-				assert.Equal(t, tt.expectedBody["next"], ret.Next)
 				assert.Equal(t, tt.expectedBody["public_song_lyrics"], ret.PublicSongLryics)
 
 			}
-			
 
 		})
 	}
