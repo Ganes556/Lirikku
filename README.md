@@ -1,5 +1,7 @@
 # Lirikku API <!-- omit from toc -->
 
+**Lirikku** adalah API untuk **menyimpan dan mencari lirik lagu**. API ini dibuat untuk memenuhi tugas mini project dari mitra **Alterra** (Studi Independen Kampus Merdeka).
+
 ## Table of Contents <!-- omit from toc -->
 
 - [Entity Relational Diagram (ERD)](#entity-relational-diagram-erd)
