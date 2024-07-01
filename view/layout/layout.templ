@@ -1,0 +1,22 @@
+package view_layout
+
+import "os"
+
+templ Main(title string) {
+	<!DOCTYPE html>
+	<html lang="en">
+		<head>
+			<meta charset="UTF-8"/>
+			<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+			<title>{ title }</title>
+			if os.Getenv("ENVIRONMENT") == "PRODUCTION" {
+				<script type="module" src="/main.js"></script>
+			} else {
+				<script type="module" src="http://localhost:5173/main.js"></script>
+			}
+		</head>
+		<body>
+			{ children... }
+		</body>
+	</html>
+}

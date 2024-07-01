@@ -1,10 +1,14 @@
 package controllers
 
 import (
+	"fmt"
 	"net/http"
 
+	"github.com/Lirikku/configs"
 	"github.com/Lirikku/models"
 	"github.com/Lirikku/services"
+	"github.com/Lirikku/utils"
+	"github.com/Lirikku/view"
 	"github.com/labstack/echo/v4"
 )
 
@@ -16,8 +20,13 @@ func NewAuthController(service services.IAuthService) *Auth {
 	return &Auth{service}
 }
 
+func (a *Auth) RegisterView(c echo.Context) error {
+	csrfToken := c.Get("csrf").(string)
+	return utils.Render(c, http.StatusOK, view.Register(csrfToken))
+}
+
 func (a *Auth) Register(c echo.Context) error {
-	
+
 	reqAuth := models.UserRegister{}
 
 	c.Bind(&reqAuth)
@@ -29,7 +38,7 @@ func (a *Auth) Register(c echo.Context) error {
 	}
 
 	err := a.service.CheckUserEmail(reqAuth.Email)
-	
+
 	if err != nil {
 		return echo.NewHTTPError(http.StatusConflict, echo.Map{
 			"message": err.Error(),
@@ -43,18 +52,21 @@ func (a *Auth) Register(c echo.Context) error {
 			"message": "internal server error",
 		})
 	}
-	
-	return c.JSON(http.StatusCreated, echo.Map{
-		"message": "success created user",
-	})
+
+	return c.NoContent(http.StatusNoContent)
+}
+
+func (a *Auth) LoginView(c echo.Context) error {
+	csrfToken := c.Get("csrf").(string)
+	return utils.Render(c, http.StatusOK, view.Login(csrfToken))
 }
 
 func (a *Auth) Login(c echo.Context) error {
-	
+
 	reqAuth := models.UserLogin{}
 
 	c.Bind(&reqAuth)
-	
+
 	if err := c.Validate(&reqAuth); err != nil {
 		return echo.NewHTTPError(http.StatusBadRequest, echo.Map{
 			"message": err.Error(),
@@ -62,10 +74,10 @@ func (a *Auth) Login(c echo.Context) error {
 	}
 
 	user, err := a.service.GetUserByEmail(reqAuth.Email)
-	
+
 	if err != nil {
 		return echo.NewHTTPError(http.StatusUnauthorized, echo.Map{
-			"message": "email not registered",
+			"message": "incorrect email or password",
 		})
 	}
 
@@ -75,10 +87,23 @@ func (a *Auth) Login(c echo.Context) error {
 		})
 	}
 
-	token, _ := user.GenerateToken()
+	store, err := configs.Store.Get(c.Request(), "session")
 
-	return c.JSON(http.StatusOK, echo.Map{
-		"message": "success login",
-		"token": token,
-	})
+	if err != nil {
+		fmt.Println("err",err)
+		return err
+	}
+
+	store.Values["auth"] = true
+	if err := store.Save(c.Request(), c.Response()); err != nil {
+		fmt.Println("err",err)
+		return err
+	}
+
+	c.Response().Header().Set("HX-Redirect", "/song_lyrics")
+	return c.NoContent(http.StatusMovedPermanently)
 }
+
+// func (a *Auth) LoginView(c echo.Context) error {
+
+// }

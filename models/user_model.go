@@ -11,30 +11,30 @@ import (
 
 type User struct {
 	Base
-	Name 	  string `json:"name" gorm:"type:varchar(150)"`
-	Email 	 string `json:"email" gorm:"type:varchar(255)"`
-	Password string `json:"password" gorm:"type:varchar(64)"`
-	SongLyrics 	[]SongLyric `json:"song_lyrics" gorm:"foreignKey:UserID"`
+	Name       string      `json:"name" gorm:"type:varchar(150)"`
+	Email      string      `json:"email" gorm:"type:varchar(255)"`
+	Password   string      `json:"password" gorm:"type:varchar(64)"`
+	SongLyrics []SongLyric `json:"song_lyrics" gorm:"constraint:OnUpdate:CASCADE,OnDelete:CASCADE;foreignKey:UserID"`
 }
 
 type UserRegister struct {
-	Name 	 string `json:"name" validate:"required"`
-	Email 	string `json:"email" validate:"required,email"`
+	Name     string `json:"name" validate:"required"`
+	Email    string `json:"email" validate:"required,email"`
 	Password string `json:"password" validate:"required,min=8"`
 }
 
 type UserLogin struct {
-	Email 	string `json:"email" validate:"required,email"`
+	Email    string `json:"email" validate:"required,email"`
 	Password string `json:"password" validate:"required,min=8"`
 }
 
 type UserJWTDecode struct {
-	ID uint
+	ID   uint
 	Name string
 }
 
 type JWTClaims struct {
-	ID    uint   `json:"id"`
+	ID   uint   `json:"id"`
 	Name string `json:"name"`
 	jwt.RegisteredClaims
 }
@@ -52,13 +52,13 @@ func (u *User) CheckPassword(plain string) bool {
 
 func (u *User) GenerateToken() (string, error) {
 	claims := &JWTClaims{
-		ID: u.ID,
+		ID:   u.ID,
 		Name: u.Name,
 		RegisteredClaims: jwt.RegisteredClaims{
 			ExpiresAt: jwt.NewNumericDate(time.Now().Add(time.Hour * 24)),
 		},
 	}
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
-	
+
 	return token.SignedString([]byte(os.Getenv("JWT_SECRET")))
 }

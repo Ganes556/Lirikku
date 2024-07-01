@@ -1,6 +1,7 @@
 package configs
 
 import (
+	"database/sql"
 	"fmt"
 	"os"
 
@@ -10,7 +11,7 @@ import (
 )
 
 var DB *gorm.DB
-
+var SqlCon *sql.DB
 func InitDB() {
 	dsn := fmt.Sprintf("%s:%s@tcp(%s)/%s?charset=utf8mb4&parseTime=True&loc=Local", 
 	os.Getenv("DB_USERNAME"), 
@@ -18,7 +19,13 @@ func InitDB() {
 	os.Getenv("DB_HOST"), 
 	os.Getenv("DB_NAME"))
 	var err error
-	DB, err = gorm.Open(mysql.Open(dsn), &gorm.Config{})
+	SqlCon, err = sql.Open("mysql", dsn)
+	if err != nil {
+		panic(err)
+	}
+	DB, err = gorm.Open(mysql.New(mysql.Config{
+		Conn: SqlCon,
+	}))
 	if err != nil {
 		panic(err)
 	}

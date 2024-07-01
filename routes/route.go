@@ -8,24 +8,34 @@ import (
 	"github.com/labstack/echo/v4/middleware"
 )
 
-
-func NewRoute() *echo.Echo{
+func NewRoute() *echo.Echo {
 	e := echo.New()
 
 	e.Validator = middlewares.NewValidator()
 
 	e.Pre(middleware.RemoveTrailingSlash())
-	
+
+	e.Use(middleware.CSRFWithConfig(middleware.CSRFConfig{
+		Skipper:        middleware.DefaultSkipper,
+		TokenLength:    32,
+		TokenLookup:    "header:" + echo.HeaderXCSRFToken,
+		ContextKey:     "csrf",
+		CookieMaxAge:   86400,
+		CookieHTTPOnly: true,
+	}))
+
 	// auth
 	authGroup := e.Group("/auth")
 	authController := controllers.NewAuthController(services.GetAuthRepo())
 	{
+		authGroup.GET("/register", authController.RegisterView)
+		authGroup.GET("/login", authController.LoginView)
 		authGroup.POST("/register", authController.Register)
 		authGroup.POST("/login", authController.Login)
 	}
-	
+
 	// song lyrics
-	songLyricsGroup := e.Group("/song_lyrics")
+	songLyricsGroup := e.Group("/song_lyrics", middlewares.Authorized())
 	{
 		// my song lyrics
 		myGroup := songLyricsGroup.Group("/my")
@@ -38,7 +48,7 @@ func NewRoute() *echo.Echo{
 			myGroup.POST("", myController.SaveSongLyric)
 			myGroup.DELETE("/:id", myController.DeleteSongLyric)
 			myGroup.PUT("/:id", myController.UpdateSongLyric)
-		}  
+		}
 
 		// public song lyrics
 		publicGroup := songLyricsGroup.Group("/public")
