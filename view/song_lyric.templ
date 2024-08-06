@@ -1,0 +1,155 @@
+package view
+
+import (
+	"fmt"
+	"github.com/Lirikku/models"
+	view_component "github.com/Lirikku/view/component"
+	view_layout "github.com/Lirikku/view/layout"
+)
+
+templ SongLyric() {
+	@view_layout.Main("Song Lyric") {
+		@view_component.Nav()
+		<section class="w-screen mt-5 ">
+			<div class="flex items-center max-w-lg mx-auto">
+				<div class="relative w-full">
+					<input
+						type="text"
+						name="term"
+						hx-get="/search"
+						hx-trigger="keyup changed delay:500ms"
+						hx-target="#search-results"
+						hx-swap="innerHTML"
+						id="lyric-input"
+						class="block w-full p-2.5 rounded-[7px]  !border  !border-gray-300 border-t-transparent bg-transparent bg-white px-3 py-2.5 font-sans text-sm font-normal text-blue-gray-700  shadow-lg shadow-gray-900/5 outline outline-0 ring-4 ring-transparent transition-all placeholder:text-gray-500 placeholder-shown:border placeholder-shown:border-blue-gray-200 placeholder-shown:border-t-blue-gray-200 focus:border-2  focus:!border-gray-900 focus:border-t-transparent focus:!border-t-gray-900 focus:outline-0 focus:ring-gray-900/10 disabled:border-0 disabled:bg-blue-gray-50"
+						placeholder="Search song by term..."
+					/>
+					<button
+						data-dialog-target="dialog-md"
+						type="button"
+						class="absolute inset-y-0 flex items-center end-0 pe-3"
+					>
+						<svg
+							class="w-5 h-5 text-gray-500 hover:text-gray-400"
+							xmlns="http://www.w3.org/2000/svg"
+							fill="currentColor"
+							class="bi bi-volume-up"
+							viewBox="0 0 16 16"
+						>
+							<path d="M11.536 14.01A8.47 8.47 0 0 0 14.026 8a8.47 8.47 0 0 0-2.49-6.01l-.708.707A7.48 7.48 0 0 1 13.025 8c0 2.071-.84 3.946-2.197 5.303z"></path>
+							<path d="M10.121 12.596A6.48 6.48 0 0 0 12.025 8a6.48 6.48 0 0 0-1.904-4.596l-.707.707A5.48 5.48 0 0 1 11.025 8a5.48 5.48 0 0 1-1.61 3.89z"></path>
+							<path d="M10.025 8a4.5 4.5 0 0 1-1.318 3.182L8 10.475A3.5 3.5 0 0 0 9.025 8c0-.966-.392-1.841-1.025-2.475l.707-.707A4.5 4.5 0 0 1 10.025 8M7 4a.5.5 0 0 0-.812-.39L3.825 5.5H1.5A.5.5 0 0 0 1 6v4a.5.5 0 0 0 .5.5h2.325l2.363 1.89A.5.5 0 0 0 7 12zM4.312 6.39 6 5.04v5.92L4.312 9.61A.5.5 0 0 0 4 9.5H2v-3h2a.5.5 0 0 0 .312-.11"></path>
+						</svg>
+					</button>
+				</div>
+				// <button
+				// 	type="submit"
+				// 	class="inline-flex items-center py-2.5 px-3 ms-2 text-sm text-white select-none font-sans font-bold text-center transition-all disabled:opacity-50 disabled:shadow-none disabled:pointer-events-none rounded-lg bg-gray-900  shadow-md shadow-gray-900/10 hover:shadow-lg hover:shadow-gray-900/20 focus:opacity-[0.85] focus:shadow-none active:opacity-[0.85] active:shadow-none"
+				// >
+				// 	<svg class="w-4 h-4 me-2" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 20 20">
+				// 		<path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m19 19-4-4m0-7A7 7 0 1 1 1 8a7 7 0 0 1 14 0Z"></path>
+				// 	</svg>Search
+				// </button>
+			</div>
+			<div id="search-results" class="flex flex-col max-w-lg gap-3 mx-auto shadow-md"></div>
+			@modalAudio()
+		</section>
+	}
+}
+
+templ ResultSearch(datas []models.PublicSongsResponse) {
+	for _, data := range datas {
+		<button hx-target="#search-results" hx-swap="innerHTML" hx-get={ fmt.Sprintf("/lyric/%s/%s", data.ArtistName, data.Title) }>{ data.Title } ~ { data.ArtistName }</button>
+	}
+	// <div x-data={ fmt.Sprintf("{ data: %s, open_detail: false }", utils.Convert2Json(models.PublicSongLyricResponse{})) }>
+	// </div>
+}
+
+templ SongsDetail(data models.PublicSongDetailResponse) {
+	<div class="text-center">
+		<h1 class="mb-4 font-bold">{ data.Title } ~ { data.ArtistName }</h1>
+		<p class="whitespace-pre-line ">
+			{ data.Lyric }
+		</p>
+	</div>
+}
+
+templ modalResultData() {
+	<div
+		x-show="open_detail"
+		class="pointer-events-none fixed inset-0 z-[999] grid h-screen w-screen place-items-center bg-black bg-opacity-60 opacity-0 backdrop-blur-sm transition-opacity duration-300"
+	>
+		<div
+			data-dialog="dialog-result-data"
+			class="relative m-4 w-2/5 min-w-[40%] max-w-[40%] rounded-lg bg-white font-sans text-base font-light leading-relaxed text-blue-gray-500 antialiased shadow-2xl"
+		>
+			<div
+				class="flex items-center p-4 font-sans text-2xl antialiased font-semibold leading-snug shrink-0 text-blue-gray-900"
+				x-text="data.title + '~' + data.artist_names"
+			></div>
+			<div
+				class="relative p-4 font-sans text-base antialiased font-light leading-relaxed border-t border-b border-t-blue-gray-100 border-b-blue-gray-100 text-blue-gray-500"
+				x-text="data.lyric"
+			></div>
+			<div class="flex flex-wrap items-center justify-end p-4 shrink-0 text-blue-gray-500">
+				<button
+					@click="open_detail = false"
+					class="px-6 py-3 mr-1 font-sans text-xs font-bold text-gray-700 uppercase transition-all rounded-lg middle none center hover:bg-gray-200 active:bg-gray-300 disabled:pointer-events-none disabled:opacity-50 disabled:shadow-none"
+				>
+					Close
+				</button>
+			</div>
+		</div>
+	</div>
+}
+
+templ modalAudio() {
+	<div
+		data-dialog-backdrop="dialog-md"
+		data-dialog-backdrop-close="true"
+		class="pointer-events-none fixed inset-0 z-[999] grid h-screen w-screen place-items-center bg-black bg-opacity-60 opacity-0 backdrop-blur-sm transition-opacity duration-300"
+	>
+		<div
+			data-dialog="dialog-md"
+			class="relative m-4 w-2/5 min-w-[40%] max-w-[40%] rounded-lg bg-white font-sans text-base font-light leading-relaxed text-blue-gray-500 antialiased shadow-2xl"
+		>
+			<div
+				class="flex items-center p-4 font-sans text-2xl antialiased font-semibold leading-snug shrink-0 text-blue-gray-900"
+			>
+				Input Audio
+			</div>
+			<div
+				class="relative p-4 font-sans text-base antialiased font-light leading-relaxed border-t border-b border-t-blue-gray-100 border-b-blue-gray-100 text-blue-gray-500"
+			>
+				<div class="flex items-center justify-center w-full">
+					<label for="dropzone-file" class="flex flex-col items-center justify-center w-full h-64 border-2 border-gray-300 border-dashed rounded-lg cursor-pointer bg-gray-50 dark:hover:bg-gray-800 dark:bg-gray-700 hover:bg-gray-100 dark:border-gray-600 dark:hover:border-gray-500 dark:hover:bg-gray-600">
+						<div class="flex flex-col items-center justify-center pt-5 pb-6">
+							<svg class="w-8 h-8 mb-4 text-gray-500 dark:text-gray-400" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 20 16">
+								<path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 13h3a3 3 0 0 0 0-6h-.025A5.56 5.56 0 0 0 16 6.5 5.5 5.5 0 0 0 5.207 5.021C5.137 5.017 5.071 5 5 5a4 4 0 0 0 0 8h2.167M10 15V6m0 0L8 8m2-2 2 2"></path>
+							</svg>
+							<p class="mb-2 text-sm text-gray-500 dark:text-gray-400"><span class="font-semibold">Click to upload</span> or drag and drop</p>
+							<p class="text-xs text-gray-500 dark:text-gray-400">SVG, PNG, JPG or GIF (MAX. 800x400px)</p>
+						</div>
+						<input id="dropzone-file" type="file" class="hidden"/>
+					</label>
+				</div>
+			</div>
+			<div class="flex flex-wrap items-center justify-end p-4 shrink-0 text-blue-gray-500">
+				<button
+					data-ripple-dark="true"
+					data-dialog-close="true"
+					class="px-6 py-3 mr-1 font-sans text-xs font-bold text-red-500 uppercase transition-all rounded-lg middle none center hover:bg-red-500/10 active:bg-red-500/30 disabled:pointer-events-none disabled:opacity-50 disabled:shadow-none"
+				>
+					Cancel
+				</button>
+				<button
+					data-ripple-light="true"
+					data-dialog-close="true"
+					class="middle none center rounded-lg bg-gradient-to-tr from-green-600 to-green-400 py-3 px-6 font-sans text-xs font-bold uppercase text-white shadow-md shadow-green-500/20 transition-all hover:shadow-lg hover:shadow-green-500/40 active:opacity-[0.85] disabled:pointer-events-none disabled:opacity-50 disabled:shadow-none"
+				>
+					Confirm
+				</button>
+			</div>
+		</div>
+	</div>
+}

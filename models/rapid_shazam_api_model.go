@@ -21,10 +21,10 @@ func (sa *RapidShazamSearchAudioResponse) GetLyric() string {
 	return lyrics
 }
 
-func (sa *RapidShazamSearchAudioResponse) GetInPublicSongLyricResponse() PublicSongLyricResponse {
-	var res PublicSongLyricResponse
+func (sa *RapidShazamSearchAudioResponse) GetInPublicSongLyricResponse() PublicSongDetailResponse {
+	var res PublicSongDetailResponse
 	res.Title = sa.Track.Title
-	res.ArtistNames = sa.Track.Subtitle
+	res.ArtistName = sa.Track.Subtitle
 	res.Lyric = sa.GetLyric()
 	return res
 }

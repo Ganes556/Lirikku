@@ -55,7 +55,7 @@ templ Login(csrf string) {
 				</button>
 				<p class="block mt-4 font-sans text-base antialiased font-normal leading-relaxed text-center text-gray-700">
 					Does't have an account?
-					<a hx-get="/auth/register" hx-target="body" hx-swap="innerHTML" class="inline font-medium text-gray-900 cursor-pointer">
+					<a hx-get="/auth/register" hx-replace-url="/auth/register" hx-target="body" hx-swap="innerHTML" class="inline font-medium text-gray-900 cursor-pointer">
 						Register
 					</a>
 				</p>
@@ -129,7 +129,7 @@ templ Register(csrf string) {
 				</button>
 				<p class="block mt-4 font-sans text-base antialiased font-normal leading-relaxed text-center text-gray-700">
 					Already have an account?
-					<a hx-get="/auth/login" hx-target="body" hx-swap="innerHTML" class="inline font-medium text-gray-900 cursor-pointer">
+					<a hx-get="/auth/login" hx-replace-url="/auth/login" hx-target="body" hx-swap="innerHTML" class="inline font-medium text-gray-900 cursor-pointer">
 						Login
 					</a>
 				</p>

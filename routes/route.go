@@ -35,13 +35,23 @@ func NewRoute() *echo.Echo {
 	}
 
 	// song lyrics
-	songLyricsGroup := e.Group("/song_lyrics", middlewares.Authorized())
+	// songLyricsGroup := e.Group("/liriku")
+
+	publicController := controllers.NewPublicSongLyricsController(services.GetPublicSongLyricsRepo())
 	{
+		e.GET("/", publicController.SongLyricsView)
+		e.GET("/lyric/:artist/:title", publicController.GetSongDetail)
+		e.GET("/search", publicController.SearchSongsByTerm)
+		e.POST("/search/audio", publicController.SearchAudioSongLyric)
+	}
+
+	{
+		// songLyricsGroup.GET("/", getMy)
 		// my song lyrics
-		myGroup := songLyricsGroup.Group("/my")
+		myGroup := e.Group("/mylirikku", middlewares.Authorized())
 		myController := controllers.NewMySongLyricsController(services.GetMySongLyricsRepo())
 		{
-			myGroup.Use(middlewares.JWT())
+			// myGroup.Use(middlewares.JWT())
 			myGroup.GET("", myController.GetSongLyrics)
 			myGroup.GET("/:id", myController.GetSongLyric)
 			myGroup.GET("/search", myController.SearchSongLyrics)
@@ -50,13 +60,9 @@ func NewRoute() *echo.Echo {
 			myGroup.PUT("/:id", myController.UpdateSongLyric)
 		}
 
+		// public
 		// public song lyrics
-		publicGroup := songLyricsGroup.Group("/public")
-		publicController := controllers.NewPublicSongLyricsController(services.GetPublicSongLyricsRepo())
-		{
-			publicGroup.GET("/search", publicController.SearchTermSongLyrics)
-			publicGroup.POST("/search/audio", publicController.SearchAudioSongLyric)
-		}
+		// publicGroup := songLyricsGroup.Group("/public")
 
 	}
 

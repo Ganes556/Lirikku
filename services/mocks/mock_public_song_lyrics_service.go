@@ -10,12 +10,12 @@ type MockPublicSongLyricsRepo struct {
 }
 
 
-func (m *MockPublicSongLyricsRepo)	SearchSongLyricsByTermShazam(term, types string, offset, pageSize int) ([]models.PublicSongLyricResponse, error){
+func (m *MockPublicSongLyricsRepo)	SearchSongLyricsByTermShazam(term, types string, offset, pageSize int) ([]models.PublicSongDetailResponse, error){
 	args := m.Called(term, types, offset, pageSize)
-	return args.Get(0).([]models.PublicSongLyricResponse), args.Error(1)
+	return args.Get(0).([]models.PublicSongDetailResponse), args.Error(1)
 	
 }
-func (m *MockPublicSongLyricsRepo)	SearchSongLyricByAudioRapidShazam(rawBases64 string) (models.PublicSongLyricResponse, error){
+func (m *MockPublicSongLyricsRepo)	SearchSongLyricByAudioRapidShazam(rawBases64 string) (models.PublicSongDetailResponse, error){
 	args := m.Called(rawBases64)
-	return args.Get(0).(models.PublicSongLyricResponse), args.Error(1)
+	return args.Get(0).(models.PublicSongDetailResponse), args.Error(1)
 }

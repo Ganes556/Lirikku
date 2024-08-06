@@ -103,7 +103,3 @@ func (a *Auth) Login(c echo.Context) error {
 	c.Response().Header().Set("HX-Redirect", "/song_lyrics")
 	return c.NoContent(http.StatusMovedPermanently)
 }
-
-// func (a *Auth) LoginView(c echo.Context) error {
-
-// }
