@@ -137,28 +137,39 @@ func RequestShazamSearchAudio(rawBase64 string) (models.RapidShazamSearchAudioRe
 	urlShazamSearchAudio := "https://shazam.p.rapidapi.com/songs/v2/detect"
 
 	client := &http.Client{
-		Timeout: time.Duration(10) * time.Second,
+		Timeout: time.Duration(50) * time.Second,
 	}
-	// fmt.Println("rawBase64", rawBase64)
+
 	req, err := http.NewRequest("POST", urlShazamSearchAudio, strings.NewReader(rawBase64))
-	req.Header.Add("content-type", "text/plain")
+	req.Header.Add("Content-Type", "text/plain")
 	req.Header.Add("X-RapidAPI-Key", os.Getenv("RAPID_SHAZAM_API_KEY"))
 
 	if err != nil {
+		fmt.Println("err1->",err)
 		return models.RapidShazamSearchAudioResponse{}, err
 	}
 
 	res, err := client.Do(req)
 
 	if err != nil {
+		fmt.Println("err2->",err)
 		return models.RapidShazamSearchAudioResponse{}, err
 	}
 
 	defer res.Body.Close()
 
 	var resData models.RapidShazamSearchAudioResponse
+	// var resss map[string]any
+
+	// json.NewDecoder(res.Body).Decode(&resss)
+
+	// indent, _ := json.MarshalIndent(resss, "", " ")
+
+	// fmt.Println(string(indent))
 
 	json.NewDecoder(res.Body).Decode(&resData)
+
+	fmt.Println(resData)
 
 	return resData, nil
 }

@@ -31,18 +31,15 @@ templ Form(title, desc, successMsg string, formAttribute templ.Attributes) {
 			}
 		</script>
 		<form hx-ext="json-enc" x-data="dataForm()" x-on:htmx:after-request="handleResponse($event)" { formAttribute... } class="max-w-screen-lg mt-8 mb-2 w-80 sm:w-96">
-			if successMsg != "" {
-				@AlertSuccess(templ.Attributes{
-					"x-show": "status != 0 && status >= 200 && status < 300",
-				}) {
-					<div class="ml-3 mr-12">{ successMsg }</div>
-				}
-			} else {
-				@AlertError(templ.Attributes{
-					"x-show": "status != 0 && status >= 400",
-				}) {
-					<div x-text="message" class="ml-3 mr-12"></div>
-				}
+			@AlertSuccess(templ.Attributes{
+				"x-show": "status != 0 && status >= 200 && status < 300",
+			}) {
+				<div class="ml-3 mr-12">{ successMsg }</div>
+			}
+			@AlertError(templ.Attributes{
+				"x-show": "status != 0 && status >= 400",
+			}) {
+				<div x-text="message" class="ml-3 mr-12"></div>
 			}
 			{ children... }
 		</form>

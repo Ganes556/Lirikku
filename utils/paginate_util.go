@@ -6,22 +6,22 @@ import (
 	"github.com/labstack/echo/v4"
 )
 
-func GetPageSizeAndOffset(c echo.Context) (int, int) {
-	
-	page, _ := strconv.Atoi(c.QueryParam("page"))
+func GetPageSizeAndOffset(c echo.Context) (int, int, int) {
 
-	if page <= 0 {
-		page = 1
+	current, _ := strconv.Atoi(c.QueryParam("page"))
+
+	if current <= 0 {
+		current = 1
 	}
 
 	pageSize, _ := strconv.Atoi(c.QueryParam("page_size"))
-	
-	switch {
-    case pageSize > 15:
-      pageSize = 15
-    case pageSize <= 0:
-      pageSize = 5
-  }
 
-	return pageSize, (page - 1) * pageSize
+	switch {
+	case pageSize > 20:
+		pageSize = 20
+	case pageSize <= 0:
+		pageSize = 10
+	}
+
+	return current, pageSize, (current - 1) * pageSize
 }

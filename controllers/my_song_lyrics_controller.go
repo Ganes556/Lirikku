@@ -6,6 +6,7 @@ import (
 	"github.com/Lirikku/models"
 	"github.com/Lirikku/services"
 	"github.com/Lirikku/utils"
+	"github.com/Lirikku/view"
 	"github.com/labstack/echo/v4"
 )
 
@@ -19,40 +20,41 @@ func NewMySongLyricsController(service services.IMySongLyricsService) *MySongLyr
 
 func (my *MySongLyrics) GetSongLyrics(c echo.Context) error {
 
-	user := c.Get("user").(models.UserJWTDecode)
-	
-	pageSize, offset := utils.GetPageSizeAndOffset(c)
-	
-	resSongLyrics, err := my.service.GetSongLyrics(user.ID, offset, pageSize)
-	
+	user, _ := c.Get("user").(models.UserJWTDecode)
+	// if !ok {
+		
+	// }
+	_, pageSize, offset := utils.GetPageSizeAndOffset(c)
+
+	_, err := my.service.GetSongLyrics(user.ID, offset, pageSize)
+
 	if err != nil {
 		return echo.NewHTTPError(http.StatusInternalServerError, echo.Map{
 			"message": "internal server error",
 		})
 	}
-
-	
-	return c.JSON(http.StatusOK, echo.Map{
-		"my_song_lyrics": resSongLyrics,
-	})
+	return utils.Render(c, http.StatusOK, view.My())
+	// return c.JSON(http.StatusOK, echo.Map{
+	// 	"my_song_lyrics": resSongLyrics,
+	// })
 }
 
 func (my *MySongLyrics) GetSongLyric(c echo.Context) error {
 
 	user := c.Get("user").(models.UserJWTDecode)
-	
+
 	idSongLyric := c.Param("id")
-	
+
 	idSongLyricInt := utils.CheckId(idSongLyric)
-	
-	if idSongLyricInt == -1{
+
+	if idSongLyricInt == -1 {
 		return echo.NewHTTPError(http.StatusBadRequest, echo.Map{
 			"message": "id must be a number and greater than 0",
 		})
 	}
 
 	resSongLyric, err := my.service.GetSongLyric(idSongLyricInt, user.ID)
-	
+
 	if err != nil {
 		return echo.NewHTTPError(http.StatusNotFound, echo.Map{
 			"message": "song lyric not found",
@@ -67,11 +69,11 @@ func (my *MySongLyrics) GetSongLyric(c echo.Context) error {
 func (my *MySongLyrics) SaveSongLyric(c echo.Context) error {
 
 	user := c.Get("user").(models.UserJWTDecode)
-	
+
 	var reqSongLyricWrite models.SongLyricWrite
-	
+
 	c.Bind(&reqSongLyricWrite)
-	
+
 	if err := c.Validate(reqSongLyricWrite); err != nil {
 		return echo.NewHTTPError(http.StatusBadRequest, echo.Map{
 			"message": err.Error(),
@@ -97,21 +99,21 @@ func (my *MySongLyrics) SaveSongLyric(c echo.Context) error {
 	return c.JSON(http.StatusCreated, echo.Map{
 		"message": "song lyric saved successfully",
 	})
-	
+
 }
 
 func (my *MySongLyrics) SearchSongLyrics(c echo.Context) error {
 
 	user := c.Get("user").(models.UserJWTDecode)
-	
-	pageSize, offset := utils.GetPageSizeAndOffset(c)
-	
+
+	_, pageSize, offset := utils.GetPageSizeAndOffset(c)
+
 	title := c.QueryParam("title")
 	lyric := c.QueryParam("lyric")
-	artist_names:= c.QueryParam("artist_names")
-	
+	artist_names := c.QueryParam("artist_names")
+
 	resSongLyrics, err := my.service.SearchSongLyrics(user.ID, title, lyric, artist_names, offset, pageSize)
-	
+
 	if err != nil {
 		return echo.NewHTTPError(http.StatusInternalServerError, echo.Map{
 			"message": "internal server error",
@@ -132,7 +134,7 @@ func (my *MySongLyrics) SearchSongLyrics(c echo.Context) error {
 func (my *MySongLyrics) DeleteSongLyric(c echo.Context) error {
 
 	user := c.Get("user").(models.UserJWTDecode)
-	
+
 	idSongLyric := c.Param("id")
 
 	idSongLyricInt := utils.CheckId(idSongLyric)
@@ -144,7 +146,7 @@ func (my *MySongLyrics) DeleteSongLyric(c echo.Context) error {
 	}
 
 	_, err := my.service.GetSongLyric(idSongLyricInt, user.ID)
-	
+
 	if err != nil {
 		return echo.NewHTTPError(http.StatusNotFound, echo.Map{
 			"message": "song lyric not found",
@@ -158,7 +160,7 @@ func (my *MySongLyrics) DeleteSongLyric(c echo.Context) error {
 			"message": "internal server error",
 		})
 	}
-		
+
 	return c.JSON(http.StatusOK, echo.Map{
 		"message": "song lyric deleted successfully",
 	})
@@ -168,7 +170,7 @@ func (my *MySongLyrics) DeleteSongLyric(c echo.Context) error {
 func (my *MySongLyrics) UpdateSongLyric(c echo.Context) error {
 
 	user := c.Get("user").(models.UserJWTDecode)
-	
+
 	idSongLyric := c.Param("id")
 
 	idSongLyricInt := utils.CheckId(idSongLyric)
@@ -178,7 +180,7 @@ func (my *MySongLyrics) UpdateSongLyric(c echo.Context) error {
 			"message": "id must be a number and greater than 0",
 		})
 	}
-	
+
 	_, err := my.service.GetSongLyric(idSongLyricInt, user.ID)
 
 	if err != nil {

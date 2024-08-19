@@ -1,8 +1,10 @@
 package controllers
 
 import (
+	"fmt"
 	"net/http"
 
+	"github.com/Lirikku/models"
 	"github.com/Lirikku/services"
 	"github.com/Lirikku/utils"
 	"github.com/Lirikku/view"
@@ -18,26 +20,29 @@ func NewPublicSongLyricsController(service services.IPublicSongLyricsService) *P
 }
 
 func (pub *PublicSongLyrics) SongLyricsView(c echo.Context) error {
-	return utils.Render(c, http.StatusOK, view.SongLyric())
+	auth := c.Get("auth").(bool)
+	csrf := c.Get("csrf").(string)
+	return utils.Render(c, http.StatusOK, view.SongLyric(auth, csrf))
 }
 
 func (pub *PublicSongLyrics) SearchSongsByTerm(c echo.Context) error {
 	term := c.QueryParam("term")
 
-	pageSize, offset := utils.GetPageSizeAndOffset(c)
+	currentPage, pageSize, offset := utils.GetPageSizeAndOffset(c)
 
 	res, err := pub.service.SearchSongsByTermShazam(term, "artists,songs", offset, pageSize)
 
 	if err != nil {
+		fmt.Println(err)
 		return echo.NewHTTPError(http.StatusInternalServerError, echo.Map{
 			"message": "internal server error",
 		})
 	}
 
 	if len(c.Request().Header.Values("HX-Request")) > 0 && c.Request().Header.Values("HX-Request")[0] == "true" {
-		return utils.Render(c, http.StatusOK, view.ResultSearch(res))
+		return utils.Render(c, http.StatusOK, view.ResultSearch(currentPage, term, res))
 	}
-	
+
 	return c.JSON(http.StatusOK, echo.Map{
 		"data": res,
 	})
@@ -59,16 +64,16 @@ func (pub *PublicSongLyrics) GetSongDetail(c echo.Context) error {
 	if len(c.Request().Header.Values("HX-Request")) > 0 && c.Request().Header.Values("HX-Request")[0] == "true" {
 		return utils.Render(c, http.StatusOK, view.SongsDetail(res))
 	}
-	
-	return c.JSON(http.StatusOK, echo.Map{
-		"data": res,
-	})
 
+	return c.NoContent(http.StatusNoContent)
 }
 
 func (pub *PublicSongLyrics) SearchAudioSongLyric(c echo.Context) error {
 	audioData, _ := c.FormFile("audio")
 
+	if audioData == nil {
+		return echo.NewHTTPError(http.StatusBadRequest, "data is empty")
+	}
 	isAudio := utils.CheckAudioFile(audioData)
 	if !isAudio {
 		return echo.NewHTTPError(http.StatusBadRequest, echo.Map{
@@ -92,7 +97,33 @@ func (pub *PublicSongLyrics) SearchAudioSongLyric(c echo.Context) error {
 		})
 	}
 
-	return c.JSON(http.StatusOK, echo.Map{
-		"public_song_lyrics": resData,
-	})
+	hreq := c.Request().Header.Values("HX-Request")
+	if len(hreq) > 0 && hreq[0] == "true" {
+		detail, _ := pub.service.GetSongDetail(resData.ArtistName, resData.Title)
+		return utils.Render(c, http.StatusOK, view.SongsDetail(detail))
+	}
+
+	return c.NoContent(http.StatusNoContent)
+}
+
+func (pub *PublicSongLyrics) SearchBase64SongLyric(c echo.Context) error {
+	req := new(models.PublicSongsGetByAudioBase64)
+	c.Bind(req)
+
+	if req.AudioBase64 != "" {
+		fmt.Println("kena -> ",req.AudioBase64)
+		hreq := c.Request().Header.Values("HX-Request")
+		if len(hreq) > 0 && hreq[0] == "true" {
+			resData, err := pub.service.SearchSongLyricByAudioRapidShazam(req.AudioBase64)
+			if err != nil {
+				return echo.NewHTTPError(http.StatusNotFound, echo.Map{
+					"message": err.Error(),
+				})
+			}
+			detail, _ := pub.service.GetSongDetail(resData.ArtistName, resData.Title)
+			return utils.Render(c, http.StatusOK, view.SongsDetail(detail))
+		}
+	}
+
+	return c.NoContent(http.StatusNoContent)
 }

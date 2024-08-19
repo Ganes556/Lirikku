@@ -95,11 +95,16 @@ func (a *Auth) Login(c echo.Context) error {
 	}
 
 	store.Values["auth"] = true
+	userData := models.UserJWTDecode{
+		ID: user.ID,
+		Name: user.Name,
+	}
+	store.Values["user"] = utils.Convert2Json(userData)
 	if err := store.Save(c.Request(), c.Response()); err != nil {
 		fmt.Println("err",err)
 		return err
 	}
 
-	c.Response().Header().Set("HX-Redirect", "/song_lyrics")
+	c.Response().Header().Set("HX-Redirect", "/")
 	return c.NoContent(http.StatusMovedPermanently)
 }

@@ -25,6 +25,10 @@ type SongLyricResponse struct {
 	Lyric       string `json:"lyric"`
 }
 
+type PublicSongsGetByAudioBase64 struct {
+	AudioBase64 string `json:"audio_base64"`
+}
+
 type PublicSongsResponse struct {
 	ArtistName string `json:"artist_names"`
 	Title      string `json:"title"`

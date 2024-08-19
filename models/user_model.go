@@ -29,8 +29,8 @@ type UserLogin struct {
 }
 
 type UserJWTDecode struct {
-	ID   uint
-	Name string
+	ID   uint   `json:"id"`
+	Name string `json:"name"`
 }
 
 type JWTClaims struct {

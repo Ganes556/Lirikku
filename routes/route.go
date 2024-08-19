@@ -11,10 +11,12 @@ import (
 func NewRoute() *echo.Echo {
 	e := echo.New()
 
+	e.HTTPErrorHandler = controllers.CustomHTTPErrorHandler
 	e.Validator = middlewares.NewValidator()
 
 	e.Pre(middleware.RemoveTrailingSlash())
 
+	// csrf middleware
 	e.Use(middleware.CSRFWithConfig(middleware.CSRFConfig{
 		Skipper:        middleware.DefaultSkipper,
 		TokenLength:    32,
@@ -23,6 +25,9 @@ func NewRoute() *echo.Echo {
 		CookieMaxAge:   86400,
 		CookieHTTPOnly: true,
 	}))
+
+	// auth middleware
+	e.Use(middlewares.Authorized())
 
 	// auth
 	authGroup := e.Group("/auth")
@@ -34,24 +39,20 @@ func NewRoute() *echo.Echo {
 		authGroup.POST("/login", authController.Login)
 	}
 
-	// song lyrics
-	// songLyricsGroup := e.Group("/liriku")
-
 	publicController := controllers.NewPublicSongLyricsController(services.GetPublicSongLyricsRepo())
 	{
 		e.GET("/", publicController.SongLyricsView)
 		e.GET("/lyric/:artist/:title", publicController.GetSongDetail)
 		e.GET("/search", publicController.SearchSongsByTerm)
 		e.POST("/search/audio", publicController.SearchAudioSongLyric)
+		e.POST("/search/audiobs64", publicController.SearchBase64SongLyric)
 	}
 
 	{
-		// songLyricsGroup.GET("/", getMy)
 		// my song lyrics
-		myGroup := e.Group("/mylirikku", middlewares.Authorized())
+		myGroup := e.Group("/my")
 		myController := controllers.NewMySongLyricsController(services.GetMySongLyricsRepo())
 		{
-			// myGroup.Use(middlewares.JWT())
 			myGroup.GET("", myController.GetSongLyrics)
 			myGroup.GET("/:id", myController.GetSongLyric)
 			myGroup.GET("/search", myController.SearchSongLyrics)
@@ -59,10 +60,6 @@ func NewRoute() *echo.Echo {
 			myGroup.DELETE("/:id", myController.DeleteSongLyric)
 			myGroup.PUT("/:id", myController.UpdateSongLyric)
 		}
-
-		// public
-		// public song lyrics
-		// publicGroup := songLyricsGroup.Group("/public")
 
 	}
 

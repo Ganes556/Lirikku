@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"io"
 	"mime/multipart"
+	"net/url"
 	"strconv"
 	"strings"
 	"unicode"
@@ -55,4 +56,9 @@ func ConvertCapitalize(s string) string {
 	s = strings.ToLower(s)
 	r := []rune(s)
 	return string(unicode.ToUpper(r[0])) + string(r[1:])
+}
+
+func ConvertUrl2Normal(s string) string {
+	decodedURL, _ := url.QueryUnescape(s)
+	return decodedURL
 }

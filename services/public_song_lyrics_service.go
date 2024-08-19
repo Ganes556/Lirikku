@@ -9,7 +9,7 @@ import (
 
 type IPublicSongLyricsService interface {
 	SearchSongsByTermShazam(term, types string, offset, pageSize int) ([]models.PublicSongsResponse, error)
-	SearchSongLyricByAudioRapidShazam(rawBases64 string) (models.PublicSongDetailResponse, error)
+	SearchSongLyricByAudioRapidShazam(rawBases64 string) (models.PublicSongsResponse, error)
 	GetSongDetail(artist string, title string) (models.PublicSongDetailResponse, error)
 	SearchTermByOvh(term string) (models.OvhSearchTermResponse, error)
 	
@@ -42,7 +42,7 @@ func (pub *PublicSongLyricsRepo) SearchSongsByTermShazam(term, types string, off
 	var resPub = make([]models.PublicSongsResponse, len(res.Tracks.Hits))
 	for i, d := range res.Tracks.Hits {
 		resPub[i] = models.PublicSongsResponse{
-			ArtistName: utils.ConvertCapitalize(d.Track.Subtitle),
+			ArtistName: d.Track.Subtitle,
 			Title: d.Track.Title,
 		}
 	}
@@ -54,9 +54,10 @@ func (pub *PublicSongLyricsRepo) GetSongDetail(artist string, title string) (mod
 	if err != nil {
 		return models.PublicSongDetailResponse{}, err
 	}
+	
 	return models.PublicSongDetailResponse{
-		ArtistName: artist,
-		Title: title,
+		ArtistName: utils.ConvertUrl2Normal(artist),
+		Title: utils.ConvertUrl2Normal(title),
 		Lyric: res.Lyrics,
 	}, nil
 }
@@ -77,14 +78,13 @@ func (pub *PublicSongLyricsRepo) SearchLyricByOvh(artist string, title string) (
 	return res, nil
 }
 
-func (pub *PublicSongLyricsRepo) SearchSongLyricByAudioRapidShazam(rawBases64 string) (models.PublicSongDetailResponse, error) {
+func (pub *PublicSongLyricsRepo) SearchSongLyricByAudioRapidShazam(rawBases64 string) (models.PublicSongsResponse, error) {
 
-	res, err := utils.RequestShazamSearchAudio(rawBases64)
-
-	if err != nil || res.Track.Key == "" {
-		return models.PublicSongDetailResponse{}, errors.New("song lyric not found")
+	res, _ := utils.RequestShazamSearchAudio(rawBases64)
+	
+	if res.Track.Title == "" {
+		return models.PublicSongsResponse{}, errors.New("song lyric not found")
 	}
 
 	return res.GetInPublicSongLyricResponse(), nil
-
 }
