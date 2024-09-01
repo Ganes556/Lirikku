@@ -28,7 +28,13 @@ func Audio2RawBase64(data *multipart.FileHeader) string {
 
 	var rawOuput bytes.Buffer
 
-	err := cmd.PipeInput(r).OutputFormat("s16le").AudioCodec("pcm_s16le").AudioChannels(1).AudioRate(44100).PipeOutput(&rawOuput).Run()
+	err := cmd.PipeInput(r).
+		OutputFormat("s16le").
+		AudioCodec("pcm_s16le").
+		AudioChannels(1).
+		AudioRate(44100).
+		PipeOutput(&rawOuput).
+		Run()
 
 	if err != nil {
 		return ""

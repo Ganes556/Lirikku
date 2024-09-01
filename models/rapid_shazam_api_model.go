@@ -12,15 +12,11 @@ package models
 // }
 
 type RapidShazamSearchAudioResponse struct {
-	Track     struct {
-		Subtitle  string `json:"subtitle"`
-		Title     string `json:"title"`
+	Track struct {
+		Subtitle string `json:"subtitle"`
+		Title    string `json:"title"`
 	} `json:"track"`
-}
-
-func (sa *RapidShazamSearchAudioResponse) GetInPublicSongLyricResponse() PublicSongsResponse {
-	var res PublicSongsResponse
-	res.Title = sa.Track.Title
-	res.ArtistName = sa.Track.Subtitle
-	return res
+	Tagid     string `json:"tagid"`
+	Timestamp int64  `json:"timestamp"`
+	Timezone  string `json:"timezone"`
 }

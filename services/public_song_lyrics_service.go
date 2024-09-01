@@ -2,6 +2,8 @@ package services
 
 import (
 	"errors"
+	"fmt"
+	"strings"
 
 	"github.com/Lirikku/models"
 	"github.com/Lirikku/utils"
@@ -9,7 +11,7 @@ import (
 
 type IPublicSongLyricsService interface {
 	SearchSongsByTermShazam(term, types string, offset, pageSize int) ([]models.PublicSongsResponse, error)
-	SearchSongLyricByAudioRapidShazam(rawBases64 string) (models.PublicSongsResponse, error)
+	SearchSongLyricByAudioRapidShazam(rawBases64 string, q *models.ReqSearchAudio) (models.RapidShazamSearchAudioResponse, error)
 	GetSongDetail(artist string, title string) (models.PublicSongDetailResponse, error)
 	SearchTermByOvh(term string) (models.OvhSearchTermResponse, error)
 	
@@ -54,10 +56,15 @@ func (pub *PublicSongLyricsRepo) GetSongDetail(artist string, title string) (mod
 	if err != nil {
 		return models.PublicSongDetailResponse{}, err
 	}
+	artist = utils.ConvertUrl2Normal(artist)
+	title = utils.ConvertUrl2Normal(title)
+	
+	delchunk := fmt.Sprintf("Paroles de la chanson %s par %s", title, artist)
+	res.Lyrics = strings.ReplaceAll(res.Lyrics, delchunk, "")
 	
 	return models.PublicSongDetailResponse{
-		ArtistName: utils.ConvertUrl2Normal(artist),
-		Title: utils.ConvertUrl2Normal(title),
+		ArtistName: artist,
+		Title: title,
 		Lyric: res.Lyrics,
 	}, nil
 }
@@ -78,13 +85,22 @@ func (pub *PublicSongLyricsRepo) SearchLyricByOvh(artist string, title string) (
 	return res, nil
 }
 
-func (pub *PublicSongLyricsRepo) SearchSongLyricByAudioRapidShazam(rawBases64 string) (models.PublicSongsResponse, error) {
+func (pub *PublicSongLyricsRepo) SearchSongLyricByAudioRapidShazam(rawBases64 string, q *models.ReqSearchAudio) (models.RapidShazamSearchAudioResponse, error) {
 
-	res, _ := utils.RequestShazamSearchAudio(rawBases64)
+	res, err := utils.RequestShazamSearchAudio(rawBases64, q)
 	
-	if res.Track.Title == "" {
-		return models.PublicSongsResponse{}, errors.New("song lyric not found")
+	if err != nil {
+		return res, errors.New("internal server error")
 	}
+	
+	// if res.Track.Title == "" {
+	// 	return models.PublicSongsResponse{}, errors.New("song lyric not found")
+	// }
 
-	return res.GetInPublicSongLyricResponse(), nil
+	return res, nil
+
+	// return models.PublicSongsResponse{
+	// 	ArtistName: res.Track.Subtitle,
+	// 	Title: res.Track.Title,
+	// }, nil
 }

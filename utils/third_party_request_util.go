@@ -56,7 +56,7 @@ func RequestTermByOvh(term string) (models.OvhSearchTermResponse, error) {
 	client := &http.Client{
 		Timeout: time.Duration(10) * time.Second,
 	}
-	
+
 	req, err := http.NewRequest("GET", url, nil)
 
 	if err != nil {
@@ -132,7 +132,7 @@ func RequestShazamSearchKey(key string) (models.ShazamSearchKeyResponse, error) 
 	return resData, nil
 }
 
-func RequestShazamSearchAudio(rawBase64 string) (models.RapidShazamSearchAudioResponse, error) {
+func RequestShazamSearchAudio(rawBase64 string, q *models.ReqSearchAudio) (models.RapidShazamSearchAudioResponse, error) {
 
 	urlShazamSearchAudio := "https://shazam.p.rapidapi.com/songs/v2/detect"
 
@@ -140,19 +140,35 @@ func RequestShazamSearchAudio(rawBase64 string) (models.RapidShazamSearchAudioRe
 		Timeout: time.Duration(50) * time.Second,
 	}
 
-	req, err := http.NewRequest("POST", urlShazamSearchAudio, strings.NewReader(rawBase64))
+	u, _ := url.Parse(urlShazamSearchAudio)
+
+	if q != nil {
+		query := u.Query()
+		query.Add("identifier", q.Identifier)
+		query.Add("samplems", q.Samplems)
+		u.RawQuery = query.Encode()
+	}
+
+	req, err := http.NewRequest("POST", u.String(), strings.NewReader(rawBase64))
 	req.Header.Add("Content-Type", "text/plain")
 	req.Header.Add("X-RapidAPI-Key", os.Getenv("RAPID_SHAZAM_API_KEY"))
 
 	if err != nil {
-		fmt.Println("err1->",err)
+		fmt.Println("err1->", err)
 		return models.RapidShazamSearchAudioResponse{}, err
 	}
+
+	// {
+	// 	"matches": [],
+	// 	"tagid": "56a15f55-88e8-47dd-b897-99f3f46d7d59",
+	// 	"timestamp": 1724228429694,
+	// 	"timezone": "America/Chicago"
+	// }
 
 	res, err := client.Do(req)
 
 	if err != nil {
-		fmt.Println("err2->",err)
+		fmt.Println("err2->", err)
 		return models.RapidShazamSearchAudioResponse{}, err
 	}
 

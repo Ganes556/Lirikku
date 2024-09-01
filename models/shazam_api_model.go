@@ -18,6 +18,11 @@ type ShazamSearchTermResponse struct {
 	} `json:"tracks"`
 }
 
+type ReqSearchAudio struct {
+	Identifier string `form:"identifier"`
+	Samplems string `form:"samplems"`
+}
+
 type ShazamSearchKeyResponse struct {
 	Title    string `json:"title"`
 	Subtitle string `json:"subtitle"`
@@ -45,11 +50,3 @@ func (sk *ShazamSearchKeyResponse) GetLyric() string {
 	}
 	return lyrics
 }
-
-// func (sk *ShazamSearchKeyResponse) GetInPublicSongLyricResponse() PublicSongLyricResponse {
-// 	var res PublicSongLyricResponse
-// 	res.Title = sk.Title
-// 	res.ArtistName = sk.Subtitle
-// 	res.Lyric = sk.GetLyric()
-// 	return res
-// }

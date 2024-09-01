@@ -52,7 +52,7 @@ func Form(title, desc, successMsg string, formAttribute templ.Attributes) templ.
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("</p><script>\r\n\t\t\tfunction dataForm() {\r\n\t\t\t\treturn {\r\n\t\t\t\t\tmessage: '',\r\n\t\t\t\t\tstatus: 0,\r\n\t\t\t\t\thandleResponse() {\r\n\t\t\t\t\t\tlet data;\r\n\t\t\t\t\t\ttry {\r\n\t\t\t\t\t\t\tdata = JSON.parse(event.detail.xhr.responseText);\r\n\t\t\t\t\t\t} catch (error) {\r\n\t\t\t\t\t\t\tdata = {};\r\n\t\t\t\t\t\t}\r\n\t\t\t\t\t\t\r\n\t\t\t\t\t\tthis.status = event.detail.xhr.status;\r\n\t\t\t\t\t\tthis.message = data?.message\r\n\t\t\t\t\t\tsetTimeout(() => {\r\n\t\t\t\t\t\t\tthis.status = 0;\r\n\t\t\t\t\t\t}, 3000);\r\n\t\t\t\t\t} \r\n\t\t\t\t}\r\n\t\t\t}\r\n\t\t</script><form hx-ext=\"json-enc\" x-data=\"dataForm()\" x-on:htmx:after-request=\"handleResponse($event)\"")
+		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("</p><script>\r\n\t\t\tfunction dataForm() {\r\n\t\t\t\treturn {\r\n\t\t\t\t\tmessage: '',\r\n\t\t\t\t\tstatus: 0,\r\n\t\t\t\t\thandleResponse() {\r\n\t\t\t\t\t\tlet data;\r\n\t\t\t\t\t\ttry {\r\n\t\t\t\t\t\t\tdata = JSON.parse(event.detail.xhr.responseText);\r\n\t\t\t\t\t\t} catch (error) {\r\n\t\t\t\t\t\t\tdata = {};\r\n\t\t\t\t\t\t}\r\n\t\t\t\t\t\tthis.status = event.detail.xhr.status;\r\n\t\t\t\t\t\tthis.message = data?.message\r\n\t\t\t\t\t\tsetTimeout(() => {\r\n\t\t\t\t\t\t\tthis.status = 0;\r\n\t\t\t\t\t\t}, 3000);\r\n\t\t\t\t\t} \r\n\t\t\t\t}\r\n\t\t\t}\r\n\t\t</script><form hx-ext=\"json-enc\" x-data=\"dataForm()\" x-on:htmx:after-request=\"handleResponse($event)\"")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
@@ -83,7 +83,7 @@ func Form(title, desc, successMsg string, formAttribute templ.Attributes) templ.
 			var templ_7745c5c3_Var5 string
 			templ_7745c5c3_Var5, templ_7745c5c3_Err = templ.JoinStringErrs(successMsg)
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `view/component/form.templ`, Line: 37, Col: 40}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `view/component/form.templ`, Line: 36, Col: 40}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var5))
 			if templ_7745c5c3_Err != nil {

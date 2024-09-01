@@ -45,7 +45,7 @@ func NewRoute() *echo.Echo {
 		e.GET("/lyric/:artist/:title", publicController.GetSongDetail)
 		e.GET("/search", publicController.SearchSongsByTerm)
 		e.POST("/search/audio", publicController.SearchAudioSongLyric)
-		e.POST("/search/audiobs64", publicController.SearchBase64SongLyric)
+		// e.POST("/search/audiobs64", publicController.SearchBase64SongLyric)
 	}
 
 	{

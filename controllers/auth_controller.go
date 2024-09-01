@@ -32,7 +32,7 @@ func (a *Auth) Register(c echo.Context) error {
 	c.Bind(&reqAuth)
 
 	if err := c.Validate(&reqAuth); err != nil {
-		return echo.NewHTTPError(http.StatusBadRequest, echo.Map{
+		return c.JSON(http.StatusBadRequest, echo.Map{
 			"message": err.Error(),
 		})
 	}
@@ -40,7 +40,7 @@ func (a *Auth) Register(c echo.Context) error {
 	err := a.service.CheckUserEmail(reqAuth.Email)
 
 	if err != nil {
-		return echo.NewHTTPError(http.StatusConflict, echo.Map{
+		return c.JSON(http.StatusConflict, echo.Map{
 			"message": err.Error(),
 		})
 	}
@@ -48,7 +48,7 @@ func (a *Auth) Register(c echo.Context) error {
 	err = a.service.CreateUser(reqAuth)
 
 	if err != nil {
-		return echo.NewHTTPError(http.StatusInternalServerError, echo.Map{
+		return c.JSON(http.StatusInternalServerError, echo.Map{
 			"message": "internal server error",
 		})
 	}
@@ -68,7 +68,7 @@ func (a *Auth) Login(c echo.Context) error {
 	c.Bind(&reqAuth)
 
 	if err := c.Validate(&reqAuth); err != nil {
-		return echo.NewHTTPError(http.StatusBadRequest, echo.Map{
+		return c.JSON(http.StatusBadRequest, echo.Map{
 			"message": err.Error(),
 		})
 	}
@@ -76,13 +76,13 @@ func (a *Auth) Login(c echo.Context) error {
 	user, err := a.service.GetUserByEmail(reqAuth.Email)
 
 	if err != nil {
-		return echo.NewHTTPError(http.StatusUnauthorized, echo.Map{
+		return c.JSON(http.StatusUnauthorized, echo.Map{
 			"message": "incorrect email or password",
 		})
 	}
 
 	if !user.CheckPassword(reqAuth.Password) {
-		return echo.NewHTTPError(http.StatusUnauthorized, echo.Map{
+		return c.JSON(http.StatusUnauthorized, echo.Map{
 			"message": "incorrect email or password",
 		})
 	}

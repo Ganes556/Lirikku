@@ -20,7 +20,6 @@ templ Form(title, desc, successMsg string, formAttribute templ.Attributes) {
 						} catch (error) {
 							data = {};
 						}
-						
 						this.status = event.detail.xhr.status;
 						this.message = data?.message
 						setTimeout(() => {
