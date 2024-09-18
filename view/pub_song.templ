@@ -6,11 +6,12 @@ import (
 	"github.com/Lirikku/utils"
 	view_component "github.com/Lirikku/view/component"
 	view_layout "github.com/Lirikku/view/layout"
+	"github.com/labstack/echo/v4"
 )
 
-templ SongLyric(logged bool, csrf string) {
+templ PubSongs(c echo.Context) {
 	@view_layout.Main("Song Lyric") {
-		@view_component.Nav(logged)
+		@view_component.Nav(utils.GetContext[bool](c, "auth"))
 		<section class="w-full mt-5" x-data={ fmt.Sprintf("audioRecorder(4000)") }>
 			<div class="flex items-center max-w-lg mx-auto">
 				<div class="relative w-full">
@@ -20,11 +21,12 @@ templ SongLyric(logged bool, csrf string) {
 						name="term"
 						hx-on::before-request="htmx.find('#search-results').innerHTML='';htmx.find('#error-results').innerHTML=''"
 						hx-indicator="#search-loading"
-						hx-get="/search"
+						hx-get={ c.Echo().Reverse("searchSong") }
 						hx-trigger="keyup changed delay:500ms"
 						hx-target="#search-results"
+						hx-target-error="#error-results"
 						hx-swap="innerHTML"
-						id="lyric-input"
+						id="term-input"
 						class="block w-full p-2.5 rounded-[7px]  !border  !border-gray-300 border-t-transparent bg-transparent bg-white px-3 py-2.5 font-sans text-sm font-normal text-blue-gray-700  shadow-lg shadow-gray-900/5 outline outline-0 ring-4 ring-transparent transition-all placeholder:text-gray-500 placeholder-shown:border placeholder-shown:border-blue-gray-200 placeholder-shown:border-t-blue-gray-200 focus:border-2  focus:!border-gray-900 focus:border-t-transparent focus:!border-t-gray-900 focus:outline-0 focus:ring-gray-900/10 disabled:border-0 disabled:bg-blue-gray-50"
 						placeholder="Search song by term..."
 					/>
@@ -54,29 +56,21 @@ templ SongLyric(logged bool, csrf string) {
 									<path d="M10 8a2 2 0 1 1-4 0V3a2 2 0 1 1 4 0zM8 0a3 3 0 0 0-3 3v5a3 3 0 0 0 6 0V3a3 3 0 0 0-3-3"></path>
 								</svg>
 							</button>
-							<!-- Stop Button Icon -->
+							<!-- Wait Listening -->
 							<p x-show="isRecording">listening...</p>
-							// <button @click="stopRecording" x-show="isRecording">
-							// 	<svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" class="w-5 h-5 text-gray-500 hover:text-gray-400" viewBox="0 0 16 16">
-							// 		<path d="M6.5 5A1.5 1.5 0 0 0 5 6.5v3A1.5 1.5 0 0 0 6.5 11h3A1.5 1.5 0 0 0 11 9.5v-3A1.5 1.5 0 0 0 9.5 5z"></path>
-							// 		<path fill="#FF0000" d="M6.5 5A1.5 1.5 0 0 0 5 6.5v3A1.5 1.5 0 0 0 6.5 11h3A1.5 1.5 0 0 0 11 9.5v-3A1.5 1.5 0 0 0 9.5 5z"></path>
-							// 		<path d="M0 4a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2zm15 0a1 1 0 0 0-1-1H2a1 1 0 0 0-1 1v8a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1z"></path>
-							// 	</svg>
-							// </button>
 						</div>
 					</div>
 				</div>
 			</div>
-			<div class="flex flex-col max-w-lg py-3 mx-auto" hx-ext="response-targets">
+			<div class="flex flex-col max-w-lg py-3 mx-auto">
 				<form
 					hx-headers={ utils.Convert2Json(map[string]any{
-						"X-CSRF-Token": csrf,
+						"X-CSRF-Token": utils.GetContext[string](c, "csrf"),
 					}) }
-					:hx-on::after-request="afterRequest()"
 					hx-indicator="#search-loading"
-					hx-post="/search/audio"
-					hx-target-206="#search-results"
-					hx-target-4*="#error-results"
+					hx-post={ c.Echo().Reverse("search.audioSong") }
+					hx-target="#search-results"
+					hx-target-error="#error-results"
 					hx-swap="innerHTML"
 					hx-encoding="multipart/form-data"
 					class="hidden"
@@ -84,93 +78,114 @@ templ SongLyric(logged bool, csrf string) {
 				></form>
 				<div id="search-results" class="flex flex-col gap-y-2"></div>
 				<div id="error-results" class="text-center text-red-500 capitalize"></div>
-				<svg
-					id="search-loading"
-					class="w-10 h-10 mx-auto text-gray-300 animate-spin htmx-indicator"
-					viewBox="0 0 64 64"
-					fill="none"
-					xmlns="http://www.w3.org/2000/svg"
-					width="24"
-					height="24"
-				>
-					<path
-						d="M32 3C35.8083 3 39.5794 3.75011 43.0978 5.20749C46.6163 6.66488 49.8132 8.80101 52.5061 11.4939C55.199 14.1868 57.3351 17.3837 58.7925 20.9022C60.2499 24.4206 61 28.1917 61 32C61 35.8083 60.2499 39.5794 58.7925 43.0978C57.3351 46.6163 55.199 49.8132 52.5061 52.5061C49.8132 55.199 46.6163 57.3351 43.0978 58.7925C39.5794 60.2499 35.8083 61 32 61C28.1917 61 24.4206 60.2499 20.9022 58.7925C17.3837 57.3351 14.1868 55.199 11.4939 52.5061C8.801 49.8132 6.66487 46.6163 5.20749 43.0978C3.7501 39.5794 3 35.8083 3 32C3 28.1917 3.75011 24.4206 5.2075 20.9022C6.66489 17.3837 8.80101 14.1868 11.4939 11.4939C14.1868 8.80099 17.3838 6.66487 20.9022 5.20749C24.4206 3.7501 28.1917 3 32 3L32 3Z"
-						stroke="currentColor"
-						stroke-width="5"
-						stroke-linecap="round"
-						stroke-linejoin="round"
-					></path>
-					<path
-						d="M32 3C36.5778 3 41.0906 4.08374 45.1692 6.16256C49.2477 8.24138 52.7762 11.2562 55.466 14.9605C58.1558 18.6647 59.9304 22.9531 60.6448 27.4748C61.3591 31.9965 60.9928 36.6232 59.5759 40.9762"
-						stroke="currentColor"
-						stroke-width="5"
-						stroke-linecap="round"
-						stroke-linejoin="round"
-						class="text-gray-900"
-					></path>
-				</svg>
+				@view_component.Spinner(templ.Attributes{"id": "search-loading"}, "w-10 h-10 mx-auto htmx-indicator")
 			</div>
-			@modalAudio(csrf)
+			@modalAudio(utils.GetContext[string](c, "csrf"))
 		</section>
 	}
 }
 
-templ ResultSearch(logged bool, currPage int, currSearch string, datas []models.PublicSongsResponse) {
-	if len(datas) > 0 {
-		for i, data := range datas {
-			<div
-				class="flex gap-x-2"
-				if i + 1 == len(datas) {
-					hx-get={ fmt.Sprintf("/search?term=%s&page=%d", currSearch, currPage+1) }
-					hx-trigger="revealed"
-					hx-swap="afterend"
-					hx-indicator="#search-loading"
-				}
-			>
-				<button
-					hx-indicator="#search-loading"
-					class="w-full py-2 border-y-2 hover:bg-blue-gray-100"
-					hx-on::before-request="htmx.find('#search-results').innerHTML=''"
-					hx-trigger="click"
-					hx-swap="innerHTML"
-					hx-target="#search-results"
-					hx-get={ fmt.Sprintf("/lyric/%s/%s", data.ArtistName, templ.URL(data.Title)) }
-				>{ data.Title } ~ { data.ArtistName }</button>
-				if logged {
-					<div class="flex">
-						<button class="h-10 px-4 py-2 m-auto text-sm text-center text-white transition-all bg-green-600 border border-transparent rounded-md shadow-md hover:shadow-lg focus:bg-green-700 focus:shadow-none active:bg-green-700 hover:bg-green-700 active:shadow-none disabled:pointer-events-none disabled:opacity-50 disabled:shadow-none" type="button">
-							Save
+templ PubResultSongs(c echo.Context) {
+	@view_component.SongCardContainer[*models.PublicSongsResponse](c) {
+		if data := utils.GetContext[*models.PublicSongsResponse](c, "data-card"); data != nil {
+			<button
+				hx-indicator="#search-loading"
+				class="w-full py-2 border-y-2 hover:bg-blue-gray-100"
+				hx-on::before-request="htmx.find('#search-results').innerHTML=''"
+				hx-trigger="click"
+				hx-swap="innerHTML"
+				hx-target="#search-results"
+				hx-get={ c.Echo().Reverse("detailSong", data.ArtistNames, data.Title) }
+			>{ data.Title } ~ { data.ArtistNames }</button>
+			if utils.GetContext[bool](c, "auth") {
+				<div
+					class="flex"
+					x-data="{
+								'loading': false,
+								'status': 0,
+								handleResponse() {
+									let data;
+									try {
+										data = JSON.parse(event.detail.xhr.responseText);
+									} catch (error) {
+										data = {};
+									}
+									this.loading = false
+									this.status = event.detail.xhr.status;
+									if(this.status == 400) {
+										htmx.find('#search-results').innerHTML = ''
+										htmx.find('#error-results').innerHTML = data?.message || 'bad request'
+									}else if(this.status != 200) {
+										htmx.find('#search-results').innerHTML = ''
+										htmx.find('#error-results').innerHTML = data?.message || 'something wrong'
+									}
+								}
+							}"
+				>
+					if data.Saved {
+						<button
+							disabled
+							class="px-4 py-2 text-sm text-center text-white transition-all bg-gray-400 border border-transparent rounded-md shadow-md bg-slate-800 hover:shadow-lg focus:shadow-none disabled:pointer-events-none disabled:opacity-50 disabled:shadow-none"
+							type="button"
+						>
+							<div class="flex gap-x-2">
+								<div>Saved</div>
+							</div>
 						</button>
-					</div>
-				}
-			</div>
+					} else {
+						<button
+							x-show="status == 200"
+							disabled
+							class="px-4 py-2 ml-2 text-sm text-center text-white transition-all bg-gray-400 border border-transparent rounded-md shadow-md bg-slate-800 hover:shadow-lg focus:shadow-none disabled:pointer-events-none disabled:opacity-50 disabled:shadow-none"
+							type="button"
+						>
+							Saved
+						</button>
+						<button
+							x-show="status != 200"
+							hx-post={ c.Echo().Reverse("my.pubSong") }
+							hx-vals={ utils.Convert2Json(echo.Map{
+										"artist_names": data.ArtistNames,
+										"title": data.Title,
+										"key": data.Key,
+									}) }
+							hx-headers={ utils.Convert2Json(echo.Map{
+									"X-CSRF-Token": utils.GetContext[string](c, "csrf"),
+								}) }
+							x-on:htmx:after-request="handleResponse($event)"
+							hx-ext="json-enc"
+							class="h-10 px-4 py-2 m-auto text-sm text-center text-white transition-all bg-green-600 border border-transparent rounded-md shadow-md hover:shadow-lg focus:bg-green-700 focus:shadow-none active:bg-green-700 hover:bg-green-700 active:shadow-none disabled:pointer-events-none disabled:opacity-50 disabled:shadow-none"
+							type="button"
+							@click="loading = true"
+						>
+							<div class="flex gap-x-2">
+								<div x-show="loading">
+									@view_component.Spinner(nil, "w-5 h-5")
+								</div>
+								Save
+							</div>
+						</button>
+					}
+				</div>
+			}
 		}
 	}
 }
 
-templ SongsDetail(data models.PublicSongDetailResponse) {
-	<div class="text-center">
-		<h1 class="mb-4 font-bold">{ data.Title } ~ { data.ArtistName }</h1>
-		<p class="whitespace-pre-line ">
-			if data.Lyric == "" {
-				lyric not found
-			} else {
-				{ data.Lyric }
-			}
-		</p>
-	</div>
+templ PubSongDetail(data models.PublicSongDetailResponse) {
+	@view_component.SongsDetail(utils.Convert2Map(data))
 }
 
 templ modalAudio(csrf string) {
 	<div
 		data-dialog-backdrop="dialog-md"
-		data-dialog-backdrop-close="true"
 		class="pointer-events-none fixed inset-0 z-[999] grid h-screen w-screen place-items-center bg-black bg-opacity-60 opacity-0 backdrop-blur-sm transition-opacity duration-300"
 	>
 		<form
 			hx-post="/search/audio"
 			hx-encoding="multipart/form-data"
 			hx-target="#search-results"
+			hx-target-error="#error-results"
 			hx-swap="innerHTML"
 			hx-headers={ utils.Convert2Json(map[string]any{
 				"X-CSRF-Token": csrf,
@@ -203,7 +218,7 @@ templ modalAudio(csrf string) {
 				class="relative p-4 font-sans text-base antialiased font-light leading-relaxed border-t border-b border-t-blue-gray-100 border-b-blue-gray-100 text-blue-gray-500"
 			>
 				<div class="flex items-center justify-center w-full">
-					<label for="dropzone-file" class="flex flex-col items-center justify-center w-full h-64 border-2 border-gray-300 border-dashed rounded-lg cursor-pointer bg-gray-50 dark:hover:bg-gray-800 dark:bg-gray-700 hover:bg-gray-100 dark:border-gray-600 dark:hover:border-gray-500 dark:hover:bg-gray-600">
+					<label for="dropzone-file" class="flex flex-col items-center justify-center w-full h-64 border-2 border-gray-300 border-dashed rounded-lg cursor-pointer bg-gray-50 dark:bg-gray-700 hover:bg-gray-100 dark:border-gray-600 dark:hover:border-gray-500 dark:hover:bg-gray-600">
 						<div class="flex flex-col items-center justify-center pt-5 pb-6">
 							<svg class="w-8 h-8 mb-4 text-gray-500 dark:text-gray-400" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 20 16">
 								<path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 13h3a3 3 0 0 0 0-6h-.025A5.56 5.56 0 0 0 16 6.5 5.5 5.5 0 0 0 5.207 5.021C5.137 5.017 5.071 5 5 5a4 4 0 0 0 0 8h2.167M10 15V6m0 0L8 8m2-2 2 2"></path>

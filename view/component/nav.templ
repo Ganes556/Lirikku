@@ -17,7 +17,7 @@ templ Nav(logged bool) {
 					<div class="hidden mr-4 lg:block">
 						<ul class="flex flex-col gap-2 mt-2 mb-4 lg:mb-0 lg:mt-0 lg:flex-row lg:items-center lg:gap-6">
 							<li class="block p-1 font-sans text-sm antialiased font-normal leading-normal text-blue-gray-900">
-								<a href="/my" class="flex items-center">
+								<a href="/my" class="flex items-center" :class="location.href.split('/').includes('my') ? 'underline underline-offset-4' : ''">
 									My Song Lyric
 								</a>
 							</li>
@@ -26,7 +26,7 @@ templ Nav(logged bool) {
 					<div class="flex items-center gap-x-1">
 						<button
 							hx-get="/auth/logout"
-							hx-replace-url="/auth/login"
+							hx-replace-url="/"
 							class="select-none rounded-lg bg-red-500 py-3 px-6 text-center align-middle font-sans text-xs font-bold uppercase text-white shadow-md shadow-red-500/20 transition-all hover:shadow-lg hover:shadow-red-500/40 focus:opacity-[0.85] focus:shadow-none active:opacity-[0.85] active:shadow-none disabled:pointer-events-none disabled:opacity-50 disabled:shadow-none"
 							type="button"
 						>

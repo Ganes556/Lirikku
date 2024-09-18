@@ -33,18 +33,19 @@ func NewRoute() *echo.Echo {
 	authGroup := e.Group("/auth")
 	authController := controllers.NewAuthController(services.GetAuthRepo())
 	{
-		authGroup.GET("/register", authController.RegisterView)
-		authGroup.GET("/login", authController.LoginView)
-		authGroup.POST("/register", authController.Register)
-		authGroup.POST("/login", authController.Login)
+		authGroup.GET("/register", authController.RegisterView).Name = "auth.registerForm"
+		authGroup.GET("/login", authController.LoginView).Name = "auth.loginForm"
+		authGroup.GET("/logout", authController.Logout).Name = "auth.logout"
+		authGroup.POST("/register", authController.Register).Name = "auth.register"
+		authGroup.POST("/login", authController.Login).Name = "auth.login"
 	}
 
-	publicController := controllers.NewPublicSongLyricsController(services.GetPublicSongLyricsRepo())
+	publicController := controllers.NewPublicSongLyricsController(services.GetPublicSongLyricsRepo(), services.GetMySongLyricsRepo())
 	{
-		e.GET("/", publicController.SongLyricsView)
-		e.GET("/lyric/:artist/:title", publicController.GetSongDetail)
-		e.GET("/search", publicController.SearchSongsByTerm)
-		e.POST("/search/audio", publicController.SearchAudioSongLyric)
+		e.GET("/", publicController.SongLyricsView).Name = "indexSong"
+		e.GET("/lyric/:artist/:title", publicController.GetSongDetail).Name = "detailSong"
+		e.GET("/search", publicController.SearchSongsByTerm).Name = "searchSong"
+		e.POST("/search/audio", publicController.SearchAudioSongLyric).Name = "search.audioSong"
 		// e.POST("/search/audiobs64", publicController.SearchBase64SongLyric)
 	}
 
@@ -53,12 +54,13 @@ func NewRoute() *echo.Echo {
 		myGroup := e.Group("/my")
 		myController := controllers.NewMySongLyricsController(services.GetMySongLyricsRepo())
 		{
-			myGroup.GET("", myController.GetSongLyrics)
-			myGroup.GET("/:id", myController.GetSongLyric)
-			myGroup.GET("/search", myController.SearchSongLyrics)
-			myGroup.POST("", myController.SaveSongLyric)
-			myGroup.DELETE("/:id", myController.DeleteSongLyric)
-			myGroup.PUT("/:id", myController.UpdateSongLyric)
+			myGroup.GET("", myController.GetSongLyrics).Name = "indexMy"
+			myGroup.GET("/:id", myController.GetSongLyric).Name = "my.detailSong"
+			myGroup.GET("/search", myController.SearchSongLyrics).Name = "my.searchSong"
+			myGroup.POST("", myController.SaveSongLyric).Name = "my.storeSong"
+			myGroup.DELETE("/:id", myController.DeleteSongLyric).Name = "my.delSong"
+			myGroup.PUT("", myController.UpdateSongLyric).Name = "my.putSong"
+			myGroup.POST("/public", publicController.SaveSong).Name = "my.pubSong"
 		}
 
 	}

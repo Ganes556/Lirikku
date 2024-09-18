@@ -10,11 +10,10 @@ import (
 )
 
 type IPublicSongLyricsService interface {
-	SearchSongsByTermShazam(term, types string, offset, pageSize int) ([]models.PublicSongsResponse, error)
+	SearchSongsByTermShazam(term, types string, offset, pageSize int) ([]*models.PublicSongsResponse, []string, error)
 	SearchSongLyricByAudioRapidShazam(rawBases64 string, q *models.ReqSearchAudio) (models.RapidShazamSearchAudioResponse, error)
 	GetSongDetail(artist string, title string) (models.PublicSongDetailResponse, error)
 	SearchTermByOvh(term string) (models.OvhSearchTermResponse, error)
-	
 }
 
 type PublicSongLyricsRepo struct{}
@@ -26,6 +25,7 @@ func init() {
 }
 
 func GetPublicSongLyricsRepo() IPublicSongLyricsService {
+
 	return publicSongLyricsRepo
 }
 
@@ -33,22 +33,26 @@ func SetPublicSongLyricsRepo(repo IPublicSongLyricsService) {
 	publicSongLyricsRepo = repo
 }
 
-func (pub *PublicSongLyricsRepo) SearchSongsByTermShazam(term, types string, offset, pageSize int) ([]models.PublicSongsResponse, error) {
+func (pub *PublicSongLyricsRepo) SearchSongsByTermShazam(term, types string, offset, pageSize int) ([]*models.PublicSongsResponse, []string, error) {
 
 	res, err := utils.RequestTermByShazam(term, types, offset, pageSize)
 
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 
-	var resPub = make([]models.PublicSongsResponse, len(res.Tracks.Hits))
+	var resPub = make([]*models.PublicSongsResponse, len(res.Tracks.Hits))
+	var keyPub = make([]string, len(res.Tracks.Hits))
 	for i, d := range res.Tracks.Hits {
-		resPub[i] = models.PublicSongsResponse{
-			ArtistName: d.Track.Subtitle,
-			Title: d.Track.Title,
+		resPub[i] = &models.PublicSongsResponse{
+			ArtistNames: d.Track.Subtitle,
+			Key:        d.Track.Key,
+			Title:      d.Track.Title,
 		}
+		keyPub[i] = d.Track.Key
 	}
-	return resPub, nil
+
+	return resPub, keyPub, nil
 }
 
 func (pub *PublicSongLyricsRepo) GetSongDetail(artist string, title string) (models.PublicSongDetailResponse, error) {
@@ -58,14 +62,14 @@ func (pub *PublicSongLyricsRepo) GetSongDetail(artist string, title string) (mod
 	}
 	artist = utils.ConvertUrl2Normal(artist)
 	title = utils.ConvertUrl2Normal(title)
-	
+
 	delchunk := fmt.Sprintf("Paroles de la chanson %s par %s", title, artist)
 	res.Lyrics = strings.ReplaceAll(res.Lyrics, delchunk, "")
-	
+
 	return models.PublicSongDetailResponse{
-		ArtistName: artist,
-		Title: title,
-		Lyric: res.Lyrics,
+		ArtistNames: artist,
+		Title:      title,
+		Lyric:      res.Lyrics,
 	}, nil
 }
 
@@ -88,11 +92,11 @@ func (pub *PublicSongLyricsRepo) SearchLyricByOvh(artist string, title string) (
 func (pub *PublicSongLyricsRepo) SearchSongLyricByAudioRapidShazam(rawBases64 string, q *models.ReqSearchAudio) (models.RapidShazamSearchAudioResponse, error) {
 
 	res, err := utils.RequestShazamSearchAudio(rawBases64, q)
-	
+
 	if err != nil {
 		return res, errors.New("internal server error")
 	}
-	
+
 	// if res.Track.Title == "" {
 	// 	return models.PublicSongsResponse{}, errors.New("song lyric not found")
 	// }

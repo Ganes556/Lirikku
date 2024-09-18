@@ -1,0 +1,33 @@
+package view_component
+
+import (
+	"fmt"
+	"github.com/Lirikku/utils"
+	"github.com/labstack/echo/v4"
+)
+
+templ SongCardContainer[T any](c echo.Context) {
+	if datas := utils.GetContext[[]T](c, "res"); len(datas) > 0 {
+		for i, data := range datas {
+			<div
+				class="flex gap-x-2"
+				if i + 1 == len(datas) && i + 1 != 1 {
+					hx-get={ fmt.Sprintf(
+							"%s?term=%s&page=%d",
+                            utils.GetContext[string](c, "next_name"),
+							utils.GetContext[string](c, "term"),
+							utils.GetContext[int](c, "current_page")+1) }
+					hx-trigger="revealed"
+					hx-swap="afterend"
+					hx-indicator="#search-loading"
+				}
+			>
+				if c.Set("data-card", data); true {
+					{ children... }
+				}
+			</div>
+			if c.Set("data-card", nil); true {
+			}
+		}
+	}
+}

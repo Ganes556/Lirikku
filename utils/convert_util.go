@@ -68,3 +68,10 @@ func ConvertUrl2Normal(s string) string {
 	decodedURL, _ := url.QueryUnescape(s)
 	return decodedURL
 }
+
+func Convert2Map(d any) map[string]any{
+	var data map[string]any
+	dd, _ := json.Marshal(d)
+	json.Unmarshal(dd, &data)
+	return data
+}

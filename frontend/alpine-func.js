@@ -98,23 +98,23 @@ export function audioRecorder(maxRecordingTime) {
         this.stream.getTracks().forEach((track) => track.stop()); // Stop the stream
       }
     },
-    afterRequest() {
-      htmx.on('htmx:afterRequest', (e) => {
-        if (this.searchByRecorded && e.detail.successful) {
-          if (e.detail.xhr.status != 200) {
-            return;
-          }
-          if (this.retries < 2) {
-            this.retries += 1;
-            this.retriesQparam.samplems += this.maxRecordingTime;
-            this.startRecording();
-          } else {
-            htmx.find('#error-results').innerHTML = "couldn't quite catch that";
-            this.resetRetries();
-          }
-        }
-      });
-    },
+    // afterRequest() {
+    //   htmx.on('htmx:afterRequest', (e) => {
+    //     if (this.searchByRecorded && e.detail.successful) {
+    //       if (e.detail.xhr.status != 200) {
+    //         return;
+    //       }
+    //       if (this.retries < 2) {
+    //         this.retries += 1;
+    //         this.retriesQparam.samplems += this.maxRecordingTime;
+    //         this.startRecording();
+    //       } else {
+    //         htmx.find('#error-results').innerHTML = "couldn't quite catch that";
+    //         this.resetRetries();
+    //       }
+    //     }
+    //   });
+    // },
     resetRetries() {
       this.retries = 0;
       this.searchByRecorded = false;
@@ -124,14 +124,14 @@ export function audioRecorder(maxRecordingTime) {
   };
 }
 
-function blobToBase64(blob) {
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.onloadend = () => resolve(reader.result.split(',')[1]);
-    reader.onerror = reject;
-    reader.readAsDataURL(blob);
-  });
-}
+// function blobToBase64(blob) {
+//   return new Promise((resolve, reject) => {
+//     const reader = new FileReader();
+//     reader.onloadend = () => resolve(reader.result.split(',')[1]);
+//     reader.onerror = reject;
+//     reader.readAsDataURL(blob);
+//   });
+// }
 
 // await disconnect(); // Disconnect the encoder
 

@@ -8,11 +8,11 @@ templ Form(title, desc, successMsg string, formAttribute templ.Attributes) {
 		<p class="block mt-1 font-sans text-base antialiased font-normal leading-relaxed text-gray-700">
 			{ desc }
 		</p>
-		<script>
-			function dataForm() {
-				return {
-					message: '',
-					status: 0,
+		<form
+			hx-ext="json-enc"
+			x-data="{
+					'message': '',
+					'status': 0,
 					handleResponse() {
 						let data;
 						try {
@@ -26,10 +26,11 @@ templ Form(title, desc, successMsg string, formAttribute templ.Attributes) {
 							this.status = 0;
 						}, 3000);
 					} 
-				}
-			}
-		</script>
-		<form hx-ext="json-enc" x-data="dataForm()" x-on:htmx:after-request="handleResponse($event)" { formAttribute... } class="max-w-screen-lg mt-8 mb-2 w-80 sm:w-96">
+				}"
+			x-on:htmx:after-request="handleResponse($event)"
+			{ formAttribute... }
+			class="max-w-screen-lg mt-8 mb-2 w-80 sm:w-96"
+		>
 			@AlertSuccess(templ.Attributes{
 				"x-show": "status != 0 && status >= 200 && status < 300",
 			}) {

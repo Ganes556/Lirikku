@@ -56,7 +56,7 @@ func Main(title string) templ.Component {
 				return templ_7745c5c3_Err
 			}
 		}
-		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("</head><body>")
+		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("</head><body hx-ext=\"response-targets\" x-init=\"htmx.config.responseTargetUnsetsError = false; htmx.config.responseTargetSetsError = true;\">")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}

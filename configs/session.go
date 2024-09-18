@@ -22,4 +22,5 @@ func InitSessionMysql() {
 	if err != nil {
 		panic(err)
 	}
+	// Store.Cleanup(time.Duration(time.Second * 2))
 }

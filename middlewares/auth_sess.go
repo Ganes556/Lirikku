@@ -14,12 +14,12 @@ import (
 func Authorized() echo.MiddlewareFunc {
 	return func(next echo.HandlerFunc) echo.HandlerFunc {
 		return func(c echo.Context) error {
-			
+
 			s, _ := configs.Store.Get(c.Request(), "session")
 			path := c.Request().URL.Path
 			auth, ok := s.Values["auth"].(bool)
 			switch path {
-			case "/my":
+			case "/my", "/save":
 				if !ok || !auth {
 					c.Redirect(http.StatusPermanentRedirect, "/auth/login")
 					return next(c)
@@ -31,7 +31,7 @@ func Authorized() echo.MiddlewareFunc {
 			default:
 				if !ok {
 					c.Set("auth", false)
-				}else {
+				} else {
 					c.Set("auth", auth)
 				}
 			}

@@ -10,5 +10,9 @@ import Alpine from 'alpinejs';
 window.htmx = htmx;
 window.Alpine = Alpine;
 
+// window.onload = function () {  
+//     htmx.config.responseTargetUnsetsError = false; htmx.config.responseTargetSetsError = true;
+// }
+
 Alpine.data('audioRecorder', audioRecorder)
 Alpine.start();

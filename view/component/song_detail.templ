@@ -1,0 +1,14 @@
+package view_component
+
+templ SongsDetail[T map[string]any](data T) {
+	<div class="text-center">
+		<h1 class="mb-4 font-bold">{ data["title"].(string) } ~ { data["artist_names"].(string) }</h1>
+		<p class="whitespace-pre-line ">
+			if lyric, ok := data["lyric"].(string); !ok {
+				lyric not found
+			} else {
+				{ lyric }
+			}
+		</p>
+	</div>
+}

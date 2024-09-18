@@ -1,7 +1,10 @@
 package controllers
 
 import (
+	"bytes"
+	"encoding/json"
 	"fmt"
+	"io"
 	"net/http"
 
 	"github.com/Lirikku/configs"
@@ -21,8 +24,7 @@ func NewAuthController(service services.IAuthService) *Auth {
 }
 
 func (a *Auth) RegisterView(c echo.Context) error {
-	csrfToken := c.Get("csrf").(string)
-	return utils.Render(c, http.StatusOK, view.Register(csrfToken))
+	return utils.Render(c, http.StatusOK, view.Register(c))
 }
 
 func (a *Auth) Register(c echo.Context) error {
@@ -53,12 +55,16 @@ func (a *Auth) Register(c echo.Context) error {
 		})
 	}
 
+	b, _ := json.Marshal(reqAuth)
+	c.Request().Body = io.NopCloser(bytes.NewBuffer(b))
+	a.Login(c)
+
 	return c.NoContent(http.StatusNoContent)
 }
 
 func (a *Auth) LoginView(c echo.Context) error {
-	csrfToken := c.Get("csrf").(string)
-	return utils.Render(c, http.StatusOK, view.Login(csrfToken))
+	// csrfToken := c.Get("csrf").(string)
+	return utils.Render(c, http.StatusOK, view.Login(c))
 }
 
 func (a *Auth) Login(c echo.Context) error {
@@ -68,6 +74,7 @@ func (a *Auth) Login(c echo.Context) error {
 	c.Bind(&reqAuth)
 
 	if err := c.Validate(&reqAuth); err != nil {
+		fmt.Println(err)
 		return c.JSON(http.StatusBadRequest, echo.Map{
 			"message": err.Error(),
 		})
@@ -104,6 +111,23 @@ func (a *Auth) Login(c echo.Context) error {
 		fmt.Println("err",err)
 		return err
 	}
+
+	c.Response().Header().Set("HX-Redirect", "/")
+	return c.NoContent(http.StatusMovedPermanently)
+}
+
+func (a *Auth) Logout(c echo.Context) error {
+
+	session, err := configs.Store.Get(c.Request(), "session")
+
+	if err != nil {
+		fmt.Println("err",err)
+		return err
+	}
+	
+	configs.Store.Delete(c.Request(), c.Response(), session)
+	c.Set("auth", nil)
+	c.Set("user", nil)
 
 	c.Response().Header().Set("HX-Redirect", "/")
 	return c.NoContent(http.StatusMovedPermanently)
