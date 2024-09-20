@@ -65,6 +65,7 @@ func (pub *PublicSongLyrics) SaveSong(c echo.Context) error {
 
 	detailedSong, err := pub.service.GetSongDetail(req.ArtistNames, req.Title)
 	if err != nil {
+		fmt.Println("save pub song -> ",err)
 		return c.JSON(http.StatusInternalServerError, echo.Map{
 			"message": "internal server error",
 		})
@@ -139,16 +140,13 @@ func (pub *PublicSongLyrics) SearchAudioSongLyric(c echo.Context) error {
 	// resData = models.RapidShazamSearchAudioResponse{}
 
 	if err != nil {
-		// if err.Error() == ""{
-
-		// }
-		return c.String(http.StatusNotFound, err.Error())
+		return utils.ErrResponse(c, http.StatusInternalServerError, err.Error())
 	}
 
 	hreq := c.Request().Header.Values("HX-Request")
 	if len(hreq) > 0 && hreq[0] == "true" {
 		if resData.Track.Title == "" {
-			return c.JSON(http.StatusOK, resData)
+			return c.String(http.StatusBadRequest, "couldn't quite catch that")
 		}
 
 		detail, _ := pub.service.GetSongDetail(resData.Track.Subtitle, resData.Track.Title)
@@ -157,25 +155,3 @@ func (pub *PublicSongLyrics) SearchAudioSongLyric(c echo.Context) error {
 
 	return c.NoContent(http.StatusNoContent)
 }
-
-// func (pub *PublicSongLyrics) SearchBase64SongLyric(c echo.Context) error {
-// 	req := new(models.PublicSongsGetByAudioBase64)
-// 	c.Bind(req)
-
-// 	if req.AudioBase64 != "" {
-// 		fmt.Println("kena -> ",req.AudioBase64)
-// 		hreq := c.Request().Header.Values("HX-Request")
-// 		if len(hreq) > 0 && hreq[0] == "true" {
-// 			resData, err := pub.service.SearchSongLyricByAudioRapidShazam(req.AudioBase64)
-// 			if err != nil {
-// 				return echo.NewHTTPError(http.StatusNotFound, echo.Map{
-// 					"message": err.Error(),
-// 				})
-// 			}
-// 			detail, _ := pub.service.GetSongDetail(resData.ArtistName, resData.Title)
-// 			return utils.Render(c, http.StatusOK, view.SongsDetail(detail))
-// 		}
-// 	}
-
-// 	return c.NoContent(http.StatusNoContent)
-// }

@@ -70,7 +70,6 @@ templ PubSongs(c echo.Context) {
 					hx-indicator="#search-loading"
 					hx-post={ c.Echo().Reverse("search.audioSong") }
 					hx-target="#search-results"
-					hx-target-error="#error-results"
 					hx-swap="innerHTML"
 					hx-encoding="multipart/form-data"
 					class="hidden"

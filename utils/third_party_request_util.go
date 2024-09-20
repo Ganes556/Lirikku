@@ -185,7 +185,7 @@ func RequestShazamSearchAudio(rawBase64 string, q *models.ReqSearchAudio) (model
 
 	json.NewDecoder(res.Body).Decode(&resData)
 
-	fmt.Println(resData)
+	// fmt.Println(resData)
 
 	return resData, nil
 }

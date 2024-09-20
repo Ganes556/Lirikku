@@ -102,9 +102,4 @@ func (pub *PublicSongLyricsRepo) SearchSongLyricByAudioRapidShazam(rawBases64 st
 	// }
 
 	return res, nil
-
-	// return models.PublicSongsResponse{
-	// 	ArtistName: res.Track.Subtitle,
-	// 	Title: res.Track.Title,
-	// }, nil
 }

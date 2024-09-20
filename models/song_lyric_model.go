@@ -14,9 +14,15 @@ type SongLyric struct {
 }
 
 type SongLyricWrite struct {
-	ID          string `json:"id"`
 	ArtistNames string `json:"artist_names"`
 	Key         string `json:"key,omitempty"`
+	Title       string `json:"title"`
+	Lyric       string `json:"lyric"`
+}
+
+type SongLyricUpdate struct {
+	ID          string `json:"id" validate:"required"`
+	ArtistNames string `json:"artist_names"`
 	Title       string `json:"title"`
 	Lyric       string `json:"lyric"`
 }

@@ -1,0 +1,44 @@
+package view_component
+
+import "fmt"
+
+type Size string
+
+const (
+	XSmall Size = "py-1 px-2.5 text-sm"
+	Small       = "py-1.5 px-3 text-sm"
+	Medium      = "py-2 px-4 text-sm"
+	Large       = "py-2.5 px-5 text-base"
+	XLarge      = "py-3.5 px-6 text-base"
+)
+
+type BtnParams struct {
+	Attributes templ.Attributes
+	Size       Size
+}
+
+templ BtnDefault(b BtnParams) {
+	<button { b.Attributes... } class={ fmt.Sprintf("%s rounded-md bg-gray-800 border border-transparent text-center text-sm text-white transition-all shadow-md hover:shadow-lg focus:bg-gray-700 focus:shadow-none active:bg-gray-700 hover:bg-gray-700 active:shadow-none disabled:pointer-events-none disabled:opacity-50 disabled:shadow-none", b.Size) }>
+		{ children... }
+	</button>
+}
+templ BtnBlue(b BtnParams) {
+	<button { b.Attributes... } class={ fmt.Sprintf("%s text-sm text-center text-white transition-all bg-blue-600 border border-transparent rounded-md shadow-md hover:shadow-lg focus:bg-blue-700 focus:shadow-none active:bg-blue-700 hover:bg-blue-700 active:shadow-none disabled:pointer-events-none disabled:opacity-50 disabled:shadow-none", b.Size) }>
+		{ children... }
+	</button>
+}
+templ BtnRed(b BtnParams) {
+	<button { b.Attributes... } class={ fmt.Sprintf("%s rounded-md bg-red-600 border border-transparent text-center text-sm text-white transition-all shadow-md hover:shadow-lg focus:bg-red-700 focus:shadow-none active:bg-red-700 hover:bg-red-700 active:shadow-none disabled:pointer-events-none disabled:opacity-50 disabled:shadow-none", b.Size) }>
+		{ children... }
+	</button>
+}
+templ BtnGreen(b BtnParams) {
+	<button { b.Attributes... } class={ fmt.Sprintf("%s rounded-md bg-green-600 border border-transparent text-center text-sm text-white transition-all shadow-md hover:shadow-lg focus:bg-green-700 focus:shadow-none active:bg-green-700 hover:bg-green-700 active:shadow-none disabled:pointer-events-none disabled:opacity-50 disabled:shadow-none", b.Size) }>
+		{ children... }
+	</button>
+}
+templ BtnAmber(b BtnParams) {
+	<button { b.Attributes... } class={ fmt.Sprintf("%s rounded-md bg-amber-600 border border-transparent text-center text-sm text-gray-800 transition-all shadow-md hover:shadow-lg focus:bg-amber-700 focus:shadow-none active:bg-amber-700 hover:bg-amber-700 active:shadow-none disabled:pointer-events-none disabled:opacity-50 disabled:shadow-none", b.Size) }>
+		{ children... }
+	</button>
+}

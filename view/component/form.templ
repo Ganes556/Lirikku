@@ -1,9 +1,18 @@
 package view_component
 
-templ Form(title, desc, successMsg string, formAttribute templ.Attributes) {
+import "github.com/labstack/echo/v4"
+
+type TypeForm string
+
+const (
+	Register TypeForm = "register"
+	Login             = "login"
+)
+
+templ Form(c echo.Context, typeForm TypeForm, desc, successMsg string, formAttribute templ.Attributes) {
 	<div class="relative flex flex-col text-gray-700 bg-transparent shadow-none rounded-xl bg-clip-border">
-		<h4 class="block font-sans text-2xl antialiased font-semibold leading-snug tracking-normal text-blue-gray-900">
-			{ title }
+		<h4 class="block font-sans text-2xl antialiased font-semibold leading-snug tracking-normal capitalize text-blue-gray-900">
+			{ string(typeForm) }
 		</h4>
 		<p class="block mt-1 font-sans text-base antialiased font-normal leading-relaxed text-gray-700">
 			{ desc }
@@ -42,6 +51,24 @@ templ Form(title, desc, successMsg string, formAttribute templ.Attributes) {
 				<div x-text="message" class="ml-3 mr-12"></div>
 			}
 			{ children... }
+			if typeForm == Login {
+				<p class="block mt-4 font-sans text-base antialiased font-normal leading-relaxed text-center text-gray-700">
+					Does't have an account?
+					<a hx-get={ c.Echo().Reverse("auth.registerForm") } hx-replace-url={ c.Echo().Reverse("auth.registerForm") } hx-target="body" hx-swap="innerHTML" class="inline font-medium text-gray-900 cursor-pointer hover:underline">
+						Register
+					</a>
+				</p>
+			} else if typeForm == Register {
+				<p class="block mt-4 font-sans text-base antialiased font-normal leading-relaxed text-center text-gray-700">
+					Already have an account?
+					<a hx-get={ c.Echo().Reverse("auth.loginForm") } hx-replace-url={ c.Echo().Reverse("auth.loginForm") } hx-target="body" hx-swap="innerHTML" class="inline font-medium text-gray-900 cursor-pointer hover:underline">
+						Login
+					</a>
+				</p>
+			}
+			<a id="href-back" href="/" class="flex text-center group">
+				<p class="m-auto group-hover:underline">Back to main page</p>
+			</a>
 		</form>
 	</div>
 }

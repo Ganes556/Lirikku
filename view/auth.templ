@@ -10,7 +10,7 @@ import (
 templ Login(c echo.Context) {
 	@view_layout.Main("Login") {
 		<section class="flex items-center justify-center w-full min-h-screen py-5">
-			@view_component.Form("Login", "Login to get full access", "", templ.Attributes{
+			@view_component.Form(c, view_component.Login, "Login to get full feature", "", templ.Attributes{
 				"hx-post":    c.Echo().Reverse("auth.login"),
 				"hx-headers": `{ "X-CSRF-Token": "` + utils.GetContext[string](c, "csrf") + `", "Content-Type": "application/json" }`,
 				"hx-include": "div > input",
@@ -57,12 +57,6 @@ templ Login(c echo.Context) {
 				>
 					Login
 				</button>
-				<p class="block mt-4 font-sans text-base antialiased font-normal leading-relaxed text-center text-gray-700">
-					Does't have an account?
-					<a hx-get={ c.Echo().Reverse("auth.registerForm") } hx-replace-url={ c.Echo().Reverse("auth.registerForm") } hx-target="body" hx-swap="innerHTML" class="inline font-medium text-gray-900 cursor-pointer">
-						Register
-					</a>
-				</p>
 			}
 		</section>
 	}
@@ -71,7 +65,7 @@ templ Login(c echo.Context) {
 templ Register(c echo.Context) {
 	@view_layout.Main("Register") {
 		<section class="flex items-center justify-center w-full min-h-screen py-5">
-			@view_component.Form("Register", "Input your details to register", "register successfully", templ.Attributes{
+			@view_component.Form(c, view_component.Register, "Input your details to register", "register successfully", templ.Attributes{
 				"hx-post":    c.Echo().Reverse("auth.register"),
 				"hx-headers": `{ "X-CSRF-Token": "` + utils.GetContext[string](c, "csrf") + `", "Content-Type": "application/json" }`,
 				"hx-include": "div > input",
@@ -133,12 +127,6 @@ templ Register(c echo.Context) {
 				>
 					Register
 				</button>
-				<p class="block mt-4 font-sans text-base antialiased font-normal leading-relaxed text-center text-gray-700">
-					Already have an account?
-					<a hx-get={ c.Echo().Reverse("auth.loginForm") } hx-replace-url={ c.Echo().Reverse("auth.loginForm") } hx-target="body" hx-swap="innerHTML" class="inline font-medium text-gray-900 cursor-pointer">
-						Login
-					</a>
-				</p>
 			}
 		</section>
 	}

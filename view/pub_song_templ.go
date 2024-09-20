@@ -105,7 +105,7 @@ func PubSongs(c echo.Context) templ.Component {
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("\" hx-target=\"#search-results\" hx-target-error=\"#error-results\" hx-swap=\"innerHTML\" hx-encoding=\"multipart/form-data\" class=\"hidden\" id=\"search-recorded\"></form><div id=\"search-results\" class=\"flex flex-col gap-y-2\"></div><div id=\"error-results\" class=\"text-center text-red-500 capitalize\"></div>")
+			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("\" hx-target=\"#search-results\" hx-swap=\"innerHTML\" hx-encoding=\"multipart/form-data\" class=\"hidden\" id=\"search-recorded\"></form><div id=\"search-results\" class=\"flex flex-col gap-y-2\"></div><div id=\"error-results\" class=\"text-center text-red-500 capitalize\"></div>")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
@@ -173,7 +173,7 @@ func PubResultSongs(c echo.Context) templ.Component {
 				var templ_7745c5c3_Var9 string
 				templ_7745c5c3_Var9, templ_7745c5c3_Err = templ.JoinStringErrs(c.Echo().Reverse("detailSong", data.ArtistNames, data.Title))
 				if templ_7745c5c3_Err != nil {
-					return templ.Error{Err: templ_7745c5c3_Err, FileName: `view/pub_song.templ`, Line: 98, Col: 73}
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `view/pub_song.templ`, Line: 97, Col: 73}
 				}
 				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var9))
 				if templ_7745c5c3_Err != nil {
@@ -186,7 +186,7 @@ func PubResultSongs(c echo.Context) templ.Component {
 				var templ_7745c5c3_Var10 string
 				templ_7745c5c3_Var10, templ_7745c5c3_Err = templ.JoinStringErrs(data.Title)
 				if templ_7745c5c3_Err != nil {
-					return templ.Error{Err: templ_7745c5c3_Err, FileName: `view/pub_song.templ`, Line: 99, Col: 16}
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `view/pub_song.templ`, Line: 98, Col: 16}
 				}
 				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var10))
 				if templ_7745c5c3_Err != nil {
@@ -199,7 +199,7 @@ func PubResultSongs(c echo.Context) templ.Component {
 				var templ_7745c5c3_Var11 string
 				templ_7745c5c3_Var11, templ_7745c5c3_Err = templ.JoinStringErrs(data.ArtistNames)
 				if templ_7745c5c3_Err != nil {
-					return templ.Error{Err: templ_7745c5c3_Err, FileName: `view/pub_song.templ`, Line: 99, Col: 39}
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `view/pub_song.templ`, Line: 98, Col: 39}
 				}
 				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var11))
 				if templ_7745c5c3_Err != nil {
@@ -227,7 +227,7 @@ func PubResultSongs(c echo.Context) templ.Component {
 						var templ_7745c5c3_Var12 string
 						templ_7745c5c3_Var12, templ_7745c5c3_Err = templ.JoinStringErrs(c.Echo().Reverse("my.pubSong"))
 						if templ_7745c5c3_Err != nil {
-							return templ.Error{Err: templ_7745c5c3_Err, FileName: `view/pub_song.templ`, Line: 146, Col: 47}
+							return templ.Error{Err: templ_7745c5c3_Err, FileName: `view/pub_song.templ`, Line: 145, Col: 47}
 						}
 						_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var12))
 						if templ_7745c5c3_Err != nil {
@@ -244,7 +244,7 @@ func PubResultSongs(c echo.Context) templ.Component {
 							"key":          data.Key,
 						}))
 						if templ_7745c5c3_Err != nil {
-							return templ.Error{Err: templ_7745c5c3_Err, FileName: `view/pub_song.templ`, Line: 151, Col: 11}
+							return templ.Error{Err: templ_7745c5c3_Err, FileName: `view/pub_song.templ`, Line: 150, Col: 11}
 						}
 						_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var13))
 						if templ_7745c5c3_Err != nil {
@@ -259,7 +259,7 @@ func PubResultSongs(c echo.Context) templ.Component {
 							"X-CSRF-Token": utils.GetContext[string](c, "csrf"),
 						}))
 						if templ_7745c5c3_Err != nil {
-							return templ.Error{Err: templ_7745c5c3_Err, FileName: `view/pub_song.templ`, Line: 154, Col: 10}
+							return templ.Error{Err: templ_7745c5c3_Err, FileName: `view/pub_song.templ`, Line: 153, Col: 10}
 						}
 						_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var14))
 						if templ_7745c5c3_Err != nil {
@@ -347,7 +347,7 @@ func modalAudio(csrf string) templ.Component {
 			"X-CSRF-Token": csrf,
 		}))
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `view/pub_song.templ`, Line: 192, Col: 5}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `view/pub_song.templ`, Line: 191, Col: 5}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var17))
 		if templ_7745c5c3_Err != nil {

@@ -79,7 +79,7 @@ func (my *MySongLyrics) GetSongLyric(c echo.Context) error {
 		if qPartial == "dialog-edit" {
 			c.Response().Header().Set("HX-Swap", "innerHTML")
 			c.Response().Header().Set("HX-Retarget", "#form-edit-content")
-			return utils.Render(c, http.StatusOK, view.DialongEditInput(res))
+			return utils.Render(c, http.StatusOK, view.DialongInput(res))
 		}
 		return utils.Render(c, http.StatusOK, view.MySongDetail(res))
 	}
@@ -123,7 +123,6 @@ func (my *MySongLyrics) SaveSongLyric(c echo.Context) error {
 	return c.JSON(http.StatusCreated, echo.Map{
 		"message": "song lyric saved successfully",
 	})
-
 }
 
 func (my *MySongLyrics) SearchSongLyrics(c echo.Context) error {
@@ -194,10 +193,14 @@ func (my *MySongLyrics) UpdateSongLyric(c echo.Context) error {
 
 	user := c.Get("user").(models.UserJWTDecode)
 
-	var req models.SongLyricWrite
+	var req models.SongLyricUpdate
 
 	c.Bind(&req)
 
+	if err := c.Validate(req); err != nil {
+		return utils.ErrResponse(c, http.StatusBadRequest, err.Error())
+	}
+	
 	idSongLyricInt := utils.CheckId(req.ID)
 
 	if idSongLyricInt <= 0 {

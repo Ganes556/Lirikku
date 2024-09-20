@@ -15,7 +15,7 @@ type IMySongLyricsService interface {
 	SaveSongLyric(userID uint, req models.SongLyricWrite) error
 	SearchSongLyrics(userID uint, term string, offset, pageSize int) ([]*models.SongLyricResponse,error)
 	DeleteSongLyric(idSongLyric int, userID uint) error
-	UpdateSongLyric(idSongLyric int, userID uint, req models.SongLyricWrite) error
+	UpdateSongLyric(idSongLyric int, userID uint, req models.SongLyricUpdate) error
 	CheckKeyPub(userId uint, pubRes []*models.PublicSongsResponse, keyPub []string) error
 }
 
@@ -123,7 +123,7 @@ func (my *MySongLyricsRepo) DeleteSongLyric(idSongLyric int, userID uint) error{
 	return  nil
 }
 
-func (my *MySongLyricsRepo) UpdateSongLyric(idSongLyric int, userID uint, req models.SongLyricWrite) error{
+func (my *MySongLyricsRepo) UpdateSongLyric(idSongLyric int, userID uint, req models.SongLyricUpdate) error{
 	
 	updateSongLyric := models.SongLyric{
 		Title: req.Title,
