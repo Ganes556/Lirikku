@@ -17,6 +17,7 @@
   "dependencies": {
     "@material-tailwind/html": "^2.2.2",
     "@rollup/plugin-inject": "^5.0.5",
+    "@ryangjchandler/alpine-clipboard": "^2.3.0",
     "alpinejs": "^3.14.1",
     "extendable-media-recorder": "^9.2.10",
     "extendable-media-recorder-wav-encoder": "^7.0.114",

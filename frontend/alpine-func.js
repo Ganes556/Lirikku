@@ -67,13 +67,14 @@ export function audioRecorder(maxRecordingTime) {
           const form = document.getElementById('search-recorded');
           form.setAttribute('hx-encoding', 'multipart/form-data');
           form.setAttribute('hx-trigger', 'none');
+          // formData.setAttribute(":hx-on:htmx:afterRequest='afterRequest()'");
 
           const fileBlob = new File([audioBlob], 'audio.wav');
           const formData = new FormData(form);
           formData.append('audio', fileBlob);
 
           // const base64res = await this.blobToBase64(fileBlob)
-          // :hx-on::after-request="afterRequest()"
+
           // console.log(base64res)
           // console.log('param -> ', this.retriesQparam);
 
@@ -82,6 +83,7 @@ export function audioRecorder(maxRecordingTime) {
               ...this.retriesQparam,
               audio: formData.get('audio'),
             },
+            event: this.afterRequest(),
             source: form,
           });
         });
@@ -98,23 +100,26 @@ export function audioRecorder(maxRecordingTime) {
         this.stream.getTracks().forEach((track) => track.stop()); // Stop the stream
       }
     },
-    // afterRequest() {
-    //   htmx.on('htmx:afterRequest', (e) => {
-    //     if (this.searchByRecorded && e.detail.successful) {
-    //       if (e.detail.xhr.status != 200) {
-    //         return;
-    //       }
-    //       if (this.retries < 2) {
-    //         this.retries += 1;
-    //         this.retriesQparam.samplems += this.maxRecordingTime;
-    //         this.startRecording();
-    //       } else {
-    //         htmx.find('#error-results').innerHTML = "couldn't quite catch that";
-    //         this.resetRetries();
-    //       }
-    //     }
-    //   });
-    // },
+    afterRequest() {
+      htmx.on('htmx:afterRequest', (e) => {
+        if (this.searchByRecorded) {
+          if (e.detail.successful) {
+            this.resetRetries();
+            return;
+          }
+          if (e.detail.xhr.status === 400) {
+            if (this.retries < 3) {
+              this.retries += 1;
+              this.retriesQparam.samplems += this.maxRecordingTime;
+              this.startRecording();
+            } else {
+              this.resetRetries();
+              htmx.find('#error-results').innerHTML = e.detail.xhr.responseText;
+            }
+          }
+        }
+      });
+    },
     resetRetries() {
       this.retries = 0;
       this.searchByRecorded = false;
