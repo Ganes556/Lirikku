@@ -14,6 +14,7 @@ func NewRoute() *echo.Echo {
 	e.HTTPErrorHandler = controllers.CustomHTTPErrorHandler
 	e.Validator = middlewares.NewValidator()
 
+	e.Static("/", "static")
 	e.Pre(middleware.RemoveTrailingSlash())
 
 	// csrf middleware

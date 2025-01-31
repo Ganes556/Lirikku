@@ -1,7 +1,6 @@
 package view
 
 import (
-	"fmt"
 	"github.com/Lirikku/models"
 	"github.com/Lirikku/utils"
 	view_component "github.com/Lirikku/view/component"
@@ -12,7 +11,7 @@ import (
 templ PubSongs(c echo.Context) {
 	@view_layout.Main("Song Lyric") {
 		@view_component.Nav(utils.GetContext[bool](c, "auth"))
-		<section class="w-full mt-5" x-data={ fmt.Sprintf("audioRecorder(4000)") }>
+		<section class="w-full mt-5" x-data="audioRecorder(4000)">
 			<div class="flex items-center max-w-lg mx-auto">
 				<div class="relative w-full">
 					<input
