@@ -1,0 +1,45 @@
+services:
+  db:
+    image: mysql:8-debian
+    container_name: db-go-lirikku
+    restart: always
+    env_file:
+      - .env
+    healthcheck:
+      test:
+        [
+          'CMD',
+          'mysqladmin',
+          'ping',
+          '-h',
+          'localhost',
+          '-u',
+          '$$MYSQL_USER',
+          '-p $$MYSQL_PASSWORD',
+        ]
+      timeout: 20s
+      retries: 10
+    environment:
+      MYSQL_USER: ${DB_USERNAME}
+      MYSQL_PASSWORD: ${DB_PASSWORD}
+      MYSQL_ROOT_PASSWORD: ${DB_PASSWORD_ROOT}
+      MYSQL_DATABASE: ${DB_NAME}
+    ports:
+      - ${DB_PORT}:${DB_PORT}
+    volumes:
+      - ./db/mysql/backup:/var/lib/mysql
+      - ./db/mysql/init:/docker-entrypoint-initdb.d
+  app:
+    container_name: go-lirikku
+    build:
+      context: .
+      args:
+        PORT: $PORT
+    env_file:
+      - .env
+    ports:
+      - ${PORT}:${PORT}
+    restart: on-failure
+    depends_on:
+      db:
+        condition: service_healthy

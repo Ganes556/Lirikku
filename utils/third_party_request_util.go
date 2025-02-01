@@ -13,22 +13,21 @@ import (
 	"github.com/Lirikku/models"
 )
 
+func RequestTermByShazam(term, types string, offset, pageSize int) (models.ShazamSearchTermResponse, error) {
 
-func RequestShazamSearchTerm(term, types string, offset, pageSize int) (models.ShazamSearchTermResponse, error) {
-	
 	urlShazamSearchKey := "https://www.shazam.com/services/search/v4/id/ID/web/search"
-	
+
 	client := &http.Client{
 		Timeout: time.Duration(10) * time.Second,
 	}
-	
+
 	query := url.Values{
-		"term": {term},
+		"term":   {term},
 		"offset": {strconv.Itoa(offset)},
-		"types": {types},
-		"limit": {strconv.Itoa(pageSize)},
+		"types":  {types},
+		"limit":  {strconv.Itoa(pageSize)},
 	}.Encode()
-		
+
 	req, err := http.NewRequest("GET", urlShazamSearchKey+"?"+query, nil)
 
 	if err != nil {
@@ -36,7 +35,6 @@ func RequestShazamSearchTerm(term, types string, offset, pageSize int) (models.S
 	}
 
 	res, err := client.Do(req)
-
 
 	if err != nil {
 		return models.ShazamSearchTermResponse{}, err
@@ -49,16 +47,70 @@ func RequestShazamSearchTerm(term, types string, offset, pageSize int) (models.S
 	json.NewDecoder(res.Body).Decode(&resData)
 
 	return resData, nil
+}
+
+func RequestTermByOvh(term string) (models.OvhSearchTermResponse, error) {
+
+	url := "https://api.lyrics.ovh/suggest/" + term
+
+	client := &http.Client{
+		Timeout: time.Duration(10) * time.Second,
+	}
+
+	req, err := http.NewRequest("GET", url, nil)
+
+	if err != nil {
+		return models.OvhSearchTermResponse{}, err
+	}
+
+	res, err := client.Do(req)
+
+	if err != nil {
+		return models.OvhSearchTermResponse{}, err
+	}
+
+	defer res.Body.Close()
+
+	var resData models.OvhSearchTermResponse
+
+	json.NewDecoder(res.Body).Decode(&resData)
+
+	return resData, nil
+}
+
+func RequestLyricByOvh(artist string, title string) (models.OvhSearchLyricResponse, error) {
+	url := fmt.Sprintf("https://api.lyrics.ovh/v1/%s/%s", artist, title)
+	client := &http.Client{
+		Timeout: time.Duration(10) * time.Second,
+	}
+	req, err := http.NewRequest("GET", url, nil)
+
+	if err != nil {
+		return models.OvhSearchLyricResponse{}, err
+	}
+
+	res, err := client.Do(req)
+
+	if err != nil {
+		return models.OvhSearchLyricResponse{}, err
+	}
+
+	defer res.Body.Close()
+	var resData models.OvhSearchLyricResponse
+
+	json.NewDecoder(res.Body).Decode(&resData)
+
+	return resData, nil
 
 }
 
 func RequestShazamSearchKey(key string) (models.ShazamSearchKeyResponse, error) {
-	urlShazamSearchKey := "https://www.shazam.com/discovery/v5/id/ID/web/-/track/" + key		
-	
+	urlShazamSearchKey := "https://www.shazam.com/discovery/v5/id/ID/web/-/track/" + key
+
 	client := &http.Client{
 		Timeout: time.Duration(10) * time.Second,
 	}
-	
+
 	req, err := http.NewRequest("GET", urlShazamSearchKey, nil)
 
 	if err != nil {
@@ -80,33 +132,60 @@ func RequestShazamSearchKey(key string) (models.ShazamSearchKeyResponse, error) 
 	return resData, nil
 }
 
-func RequestShazamSearchAudio(rawBase64 string) (models.RapidShazamSearchAudioResponse, error) {
-	
+func RequestShazamSearchAudio(rawBase64 string, q *models.ReqSearchAudio) (models.RapidShazamSearchAudioResponse, error) {
+
 	urlShazamSearchAudio := "https://shazam.p.rapidapi.com/songs/v2/detect"
-	
+
 	client := &http.Client{
-		Timeout: time.Duration(10) * time.Second,
+		Timeout: time.Duration(50) * time.Second,
 	}
-	fmt.Println("rawBase64", rawBase64)
-	req, err := http.NewRequest("POST", urlShazamSearchAudio, strings.NewReader(rawBase64))
-	req.Header.Add("content-type", "text/plain")
+
+	u, _ := url.Parse(urlShazamSearchAudio)
+
+	if q != nil {
+		query := u.Query()
+		query.Add("identifier", q.Identifier)
+		query.Add("samplems", q.Samplems)
+		u.RawQuery = query.Encode()
+	}
+
+	req, err := http.NewRequest("POST", u.String(), strings.NewReader(rawBase64))
+	req.Header.Add("Content-Type", "text/plain")
 	req.Header.Add("X-RapidAPI-Key", os.Getenv("RAPID_SHAZAM_API_KEY"))
 
 	if err != nil {
+		fmt.Println("err1->", err)
 		return models.RapidShazamSearchAudioResponse{}, err
 	}
-	
+
+	// {
+	// 	"matches": [],
+	// 	"tagid": "56a15f55-88e8-47dd-b897-99f3f46d7d59",
+	// 	"timestamp": 1724228429694,
+	// 	"timezone": "America/Chicago"
+	// }
+
 	res, err := client.Do(req)
 
 	if err != nil {
+		fmt.Println("err2->", err)
 		return models.RapidShazamSearchAudioResponse{}, err
 	}
-	
+
 	defer res.Body.Close()
 
 	var resData models.RapidShazamSearchAudioResponse
+	// var resss map[string]any
+
+	// json.NewDecoder(res.Body).Decode(&resss)
+
+	// indent, _ := json.MarshalIndent(resss, "", " ")
+
+	// fmt.Println(string(indent))
 
 	json.NewDecoder(res.Body).Decode(&resData)
-	
+
+	// fmt.Println(resData)
+
 	return resData, nil
 }

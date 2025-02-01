@@ -4,14 +4,23 @@ import (
 	"strings"
 )
 
+type ShazamTrack struct {
+	Key      string `json:"key"`
+	Subtitle string `json:"subtitle"`
+	Title    string `json:"title"`
+}
+
 type ShazamSearchTermResponse struct {
 	Tracks struct {
 		Hits []struct {
-			Track struct {
-				Key   string `json:"key"`
-			} `json:"track"`
+			Track ShazamTrack `json:"track"`
 		} `json:"hits"`
 	} `json:"tracks"`
+}
+
+type ReqSearchAudio struct {
+	Identifier string `form:"identifier"`
+	Samplems string `form:"samplems"`
 }
 
 type ShazamSearchKeyResponse struct {
@@ -32,22 +41,12 @@ func (sm *ShazamSearchTermResponse) GetKeys() []string {
 	return keys
 }
 
-
 // search key
 
-func (sk *ShazamSearchKeyResponse) GetLyric() string {	
+func (sk *ShazamSearchKeyResponse) GetLyric() string {
 	var lyrics string
 	if len(sk.Sections) > 1 {
 		lyrics = strings.Join(sk.Sections[1].Text, "\n")
 	}
 	return lyrics
-}
-
-
-func (sk *ShazamSearchKeyResponse) GetInPublicSongLyricResponse() PublicSongLyricResponse {
-	var res PublicSongLyricResponse
-	res.Title = sk.Title
-	res.ArtistNames = sk.Subtitle
-	res.Lyric = sk.GetLyric()
-	return res
 }

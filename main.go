@@ -9,6 +9,7 @@ import (
 func init(){
 	godotenv.Load(".env.production")
 	configs.InitDB()
+	configs.InitSessionMysql()
 }
 
 func main() {	

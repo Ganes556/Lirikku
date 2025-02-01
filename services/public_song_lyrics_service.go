@@ -2,15 +2,18 @@ package services
 
 import (
 	"errors"
-	"sync"
+	"fmt"
+	"strings"
 
 	"github.com/Lirikku/models"
 	"github.com/Lirikku/utils"
 )
 
 type IPublicSongLyricsService interface {
-	SearchSongLyricsByTermShazam(term, types string, offset, pageSize int) ([]models.PublicSongLyricResponse, error)
-	SearchSongLyricByAudioRapidShazam(rawBases64 string) (models.PublicSongLyricResponse, error)
+	SearchSongsByTermShazam(term, types string, offset, pageSize int) ([]*models.PublicSongsResponse, []string, error)
+	SearchSongLyricByAudioRapidShazam(rawBases64 string, q *models.ReqSearchAudio) (models.RapidShazamSearchAudioResponse, error)
+	GetSongDetail(artist string, title string) (models.PublicSongDetailResponse, error)
+	SearchTermByOvh(term string) (models.OvhSearchTermResponse, error)
 }
 
 type PublicSongLyricsRepo struct{}
@@ -22,6 +25,7 @@ func init() {
 }
 
 func GetPublicSongLyricsRepo() IPublicSongLyricsService {
+
 	return publicSongLyricsRepo
 }
 
@@ -29,50 +33,73 @@ func SetPublicSongLyricsRepo(repo IPublicSongLyricsService) {
 	publicSongLyricsRepo = repo
 }
 
-func (pub *PublicSongLyricsRepo) SearchSongLyricsByTermShazam(term, types string, offset, pageSize int) ([]models.PublicSongLyricResponse, error) {
+func (pub *PublicSongLyricsRepo) SearchSongsByTermShazam(term, types string, offset, pageSize int) ([]*models.PublicSongsResponse, []string, error) {
 
-	res, err := utils.RequestShazamSearchTerm(term, types, offset, pageSize)
+	res, err := utils.RequestTermByShazam(term, types, offset, pageSize)
 
 	if err != nil {
-		return []models.PublicSongLyricResponse{}, err
+		return nil, nil, err
 	}
 
-	keys := res.GetKeys()
-	
-	var resPublicSongLyrics = make([]models.PublicSongLyricResponse, len(keys))
-
-	var wg sync.WaitGroup
-
-	for i, key := range keys {
-		wg.Add(1)
-		go func (i int, key string) {
-			defer wg.Done()
-
-			res, err := utils.RequestShazamSearchKey(key)
-
-			if err != nil {
-				return
-			}
-
-			resPublicSongLyrics[i] = res.GetInPublicSongLyricResponse()
-			
-		}(i, key)
-
+	var resPub = make([]*models.PublicSongsResponse, len(res.Tracks.Hits))
+	var keyPub = make([]string, len(res.Tracks.Hits))
+	for i, d := range res.Tracks.Hits {
+		resPub[i] = &models.PublicSongsResponse{
+			ArtistNames: d.Track.Subtitle,
+			Key:        d.Track.Key,
+			Title:      d.Track.Title,
+		}
+		keyPub[i] = d.Track.Key
 	}
-	wg.Wait()
 
-	return resPublicSongLyrics, nil
-	
+	return resPub, keyPub, nil
 }
 
-func (pub *PublicSongLyricsRepo) SearchSongLyricByAudioRapidShazam(rawBases64 string) (models.PublicSongLyricResponse, error) {
+func (pub *PublicSongLyricsRepo) GetSongDetail(artist string, title string) (models.PublicSongDetailResponse, error) {
+	res, err := utils.RequestLyricByOvh(artist, title)
+	if err != nil {
+		return models.PublicSongDetailResponse{}, err
+	}
+	artist = utils.ConvertUrl2Normal(artist)
+	title = utils.ConvertUrl2Normal(title)
 
-	res, err := utils.RequestShazamSearchAudio(rawBases64)
-	
-	if err != nil || res.Track.Key == "" {
-		return models.PublicSongLyricResponse{}, errors.New("song lyric not found")
+	delchunk := fmt.Sprintf("Paroles de la chanson %s par %s", title, artist)
+	res.Lyrics = strings.ReplaceAll(res.Lyrics, delchunk, "")
+
+	return models.PublicSongDetailResponse{
+		ArtistNames: artist,
+		Title:      title,
+		Lyric:      res.Lyrics,
+	}, nil
+}
+
+func (pub *PublicSongLyricsRepo) SearchTermByOvh(term string) (models.OvhSearchTermResponse, error) {
+	res, err := utils.RequestTermByOvh(term)
+	if err != nil {
+		return models.OvhSearchTermResponse{}, err
+	}
+	return res, nil
+}
+
+func (pub *PublicSongLyricsRepo) SearchLyricByOvh(artist string, title string) (models.OvhSearchLyricResponse, error) {
+	res, err := utils.RequestLyricByOvh(artist, title)
+	if err != nil {
+		return models.OvhSearchLyricResponse{}, err
+	}
+	return res, nil
+}
+
+func (pub *PublicSongLyricsRepo) SearchSongLyricByAudioRapidShazam(rawBases64 string, q *models.ReqSearchAudio) (models.RapidShazamSearchAudioResponse, error) {
+
+	res, err := utils.RequestShazamSearchAudio(rawBases64, q)
+
+	if err != nil {
+		return res, errors.New("internal server error")
 	}
 
-	return res.GetInPublicSongLyricResponse(), nil
+	// if res.Track.Title == "" {
+	// 	return models.PublicSongsResponse{}, errors.New("song lyric not found")
+	// }
 
+	return res, nil
 }

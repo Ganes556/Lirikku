@@ -1,0 +1,244 @@
+package view
+
+import (
+	"fmt"
+	"github.com/Lirikku/models"
+	"github.com/Lirikku/utils"
+	view_component "github.com/Lirikku/view/component"
+	view_layout "github.com/Lirikku/view/layout"
+	"github.com/labstack/echo/v4"
+)
+
+templ MySongs(c echo.Context) {
+	@view_layout.Main("My Songs") {
+		@view_component.Nav(true)
+		<section class="w-full mt-5" x-data="{showDetail: false}">
+			<div class="flex items-center max-w-lg mx-auto gap-x-2">
+				<a
+					class="cursor-pointer"
+					href={ templ.URL(c.Echo().Reverse("my.indexSong")) }
+					@click="showDetail = false"
+					x-show="showDetail"
+				>
+					<svg class="w-5 h-5" xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-arrow-left" viewBox="0 0 16 16">
+						<path fill-rule="evenodd" d="M15 8a.5.5 0 0 0-.5-.5H2.707l3.147-3.146a.5.5 0 1 0-.708-.708l-4 4a.5.5 0 0 0 0 .708l4 4a.5.5 0 0 0 .708-.708L2.707 8.5H14.5A.5.5 0 0 0 15 8"></path>
+					</svg>
+				</a>
+				<input
+					type="text"
+					name="term"
+					hx-on:htmx:before-request="htmx.find('#search-results').innerHTML=''; htmx.find('#error-results').innerHTML=''"
+					hx-indicator="#search-loading"
+					hx-get={ c.Echo().Reverse("my.searchSong") }
+					hx-trigger="keyup changed delay:500ms"
+					hx-target="#search-results"
+					hx-swap="innerHTML"
+					id="term-input"
+					autocomplete="off"
+					class="block w-full p-2.5 rounded-[7px]  !border  !border-gray-300 border-t-transparent bg-transparent bg-white px-3 py-2.5 font-sans text-sm font-normal text-blue-gray-700  shadow-lg shadow-gray-900/5 outline outline-0 ring-4 ring-transparent transition-all placeholder:text-gray-500 placeholder-shown:border placeholder-shown:border-blue-gray-200 placeholder-shown:border-t-blue-gray-200 focus:border-2  focus:!border-gray-900 focus:border-t-transparent focus:!border-t-gray-900 focus:outline-0 focus:ring-gray-900/10 disabled:border-0 disabled:bg-blue-gray-50"
+					placeholder="Search for saved songs by term..."
+				/>
+				@view_component.BtnBlue(view_component.BtnParams{templ.Attributes{
+					"data-dialog-target": "dialog-add",
+				}, view_component.Large}) {
+					Add
+				}
+			</div>
+			<div class="flex flex-col max-w-lg py-3 mx-auto">
+				<div id="search-results" class="flex flex-col text-center gap-y-2">
+					if datas := utils.GetContext[[]*models.SongLyricResponse](c, "res"); len(datas) == 0 {
+						<p class="text-center">no song saved</p>
+					} else {
+						@MyResultSongs(c)
+					}
+				</div>
+				<div id="error-results" class="text-center text-red-500 capitalize"></div>
+				@view_component.Spinner(templ.Attributes{"id": "search-loading"}, "w-10 h-10 mx-auto htmx-indicator")
+			</div>
+			@dialogEdit(c)
+			@dialogAdd(c)
+		</section>
+	}
+}
+
+templ MyResultSongs(c echo.Context) {
+	@view_component.SongCardContainer[*models.SongLyricResponse](c) {
+		if data := utils.GetContext[*models.SongLyricResponse](c, "data-card"); data != nil {
+			<button
+				hx-indicator="#search-loading"
+				class="w-full py-2 border-y-2 hover:bg-blue-gray-100"
+				hx-on::before-request="htmx.find('#search-results').innerHTML=''"
+				hx-trigger="click"
+				hx-swap="innerHTML"
+				hx-target="#search-results"
+				hx-get={ c.Echo().Reverse("my.detailSong", data.ID) }
+				@click="showDetail = true"
+			>{ data.Title } ~ { data.ArtistNames }</button>
+			<div class="flex items-center justify-center gap-x-1">
+				@view_component.BtnGreen(view_component.BtnParams{templ.Attributes{
+					"hx-get":             fmt.Sprintf("/my/%d?partial=dialog-edit", data.ID),
+					"hx-trigger":         "click",
+					"hx-swap":            "innerHTML",
+					"hx-indicator":       "#edit-dialog-loading",
+					"data-dialog-target": "dialog-edit",
+					"type":               "button",
+				}, view_component.Large}) {
+					Edit
+				}
+				@view_component.BtnRed(view_component.BtnParams{templ.Attributes{
+					"@click":     "loading = true",
+					"hx-confirm": fmt.Sprintf("Delete %s?", data.Title),
+					"hx-headers": utils.Convert2Json(echo.Map{"X-CSRF-Token": utils.GetContext[string](c, "csrf")}),
+					"hx-delete":  c.Echo().Reverse("my.delSong", data.ID),
+					"type":       "button",
+				}, view_component.Large}) {
+					Delete
+				}
+			</div>
+		}
+	}
+}
+
+templ MySongDetail(data models.SongLyricResponse) {
+	@view_component.SongsDetail(utils.Convert2Map(data))
+}
+
+templ DialongInput(data models.SongLyricResponse) {
+	if data.ID != 0 {
+		<div class="hidden">
+			<input type="text" name="id" value={ fmt.Sprint(data.ID) }/>
+		</div>
+	}
+	<div class="w-full">
+		<label class="block mb-2 text-sm font-semibold text-gray-900" for="edit-title">
+			Title
+		</label>
+		<input
+			value={ data.Title }
+			id="edit-title"
+			name="title"
+			autocomplete="off"
+			class="w-full bg-transparent 
+		text-gray-900 placeholder:text-gray-400 text-sm border border-gray-200 rounded-md px-3 py-1.5 transition duration-300 ease focus:outline-none focus:border-gray-900 hover:border-gray-300 shadow-sm focus:shadow"
+		/>
+	</div>
+	<div class="w-full">
+		<label class="block mb-2 text-sm font-semibold text-gray-900" for="edit-artist_names">
+			Artist Names
+		</label>
+		<input autocomplete="off" value={ data.ArtistNames } id="edit-artist_names" name="artist_names" class="w-full bg-transparent text-gray-900 placeholder:text-gray-400 text-sm border border-gray-200 rounded-md px-3 py-1.5 transition duration-300 ease focus:outline-none focus:border-gray-900 hover:border-gray-300 shadow-sm focus:shadow"/>
+	</div>
+	<div class="relative w-full mt-2">
+		<textarea
+			id="edit-lyric"
+			name="lyric"
+			autocomplete="off"
+			class="peer h-60 min-h-[100px] w-full resize-none rounded-[7px] border border-gray-200 
+			text-black border-t-transparent bg-transparent px-3 py-2.5 font-sans text-sm font-normal outline outline-0 transition-all placeholder-shown:border placeholder-shown:border-gray-200 placeholder-shown:border-t-gray-200 focus:border-2 focus:border-gray-900 focus:border-t-transparent focus:outline-0 disabled:resize-none disabled:border-0 disabled:bg-blue-gray-50"
+			placeholder=" "
+		>{ data.Lyric }</textarea>
+		<label
+			for="edit-lyric"
+			class="before:content[' '] after:content[' '] pointer-events-none absolute left-0 -top-1.5 flex h-full w-full select-none text-[11px] leading-tight font-semibold text-gray-900 transition-all before:pointer-events-none before:mt-[6.5px] before:mr-1 before:box-border before:block before:h-1.5 before:w-2.5 before:rounded-tl-md before:border-t before:border-l before:border-gray-200 before:transition-all after:pointer-events-none after:mt-[6.5px] after:ml-1 after:box-border after:block after:h-1.5 after:w-2.5 after:flex-grow after:rounded-tr-md after:border-t after:border-r after:border-gray-200 after:transition-all peer-placeholder-shown:text-sm peer-placeholder-shown:leading-[3.75] peer-placeholder-shown:text-gray-500 peer-placeholder-shown:before:border-transparent peer-placeholder-shown:after:border-transparent peer-focus:text-[11px] peer-focus:leading-tight peer-focus:text-gray-900 peer-focus:before:border-t-2 peer-focus:before:border-l-2 peer-focus:before:border-gray-900 peer-focus:after:border-t-2 peer-focus:after:border-r-2 peer-focus:after:border-gray-900 peer-disabled:text-transparent peer-disabled:before:border-transparent peer-disabled:after:border-transparent peer-disabled:peer-placeholder-shown:text-gray-900"
+		>
+			Lyric
+		</label>
+	</div>
+}
+
+templ dialogEdit(c echo.Context) {
+	<div
+		data-dialog-backdrop="dialog-edit"
+		class="pointer-events-none fixed inset-0 z-[999] grid h-screen w-screen place-items-center bg-black bg-opacity-60 opacity-0 backdrop-blur-sm transition-opacity duration-300"
+	>
+		<form
+			id="#form-edit"
+			hx-put={ c.Echo().Reverse("my.putSong") }
+			hx-ext="json-enc"
+			hx-swap="innerHTML"
+			hx-include="#form-edit > main > div > input, #form-edit > main > div > textarea"
+			hx-headers={ utils.Convert2Json(map[string]any{
+				"X-CSRF-Token": utils.GetContext[string](c, "csrf"),
+			}) }
+			hx-indicator="#search-loading"
+			data-dialog="dialog-edit"
+			class="relative m-4 p-4 w-2/5 min-w-[40%] max-w-[40%] rounded-lg bg-white shadow-sm"
+		>
+			<div
+				class="flex items-center p-4 font-sans text-2xl antialiased font-semibold leading-snug border-b-2 shrink-0 text-blue-gray-900"
+			>
+				Edit Saved Song
+			</div>
+			<main id="form-edit-content" class="flex flex-wrap items-center justify-end p-4 overflow-y-scroll h-80 gap-y-3 shrink-0 text-blue-gray-500"></main>
+			@view_component.Spinner(templ.Attributes{"id": "edit-dialog-loading"}, "w-10 h-10 mx-auto htmx-indicator")
+			<div class="flex justify-end gap-2 p-4">
+				<button
+					type="button"
+					data-ripple-dark="true"
+					data-dialog-close="true"
+					class="px-6 py-3 mr-1 font-sans text-xs font-bold text-red-500 uppercase transition-all rounded-lg middle none center hover:bg-red-500/10 active:bg-red-500/30 disabled:pointer-events-none disabled:opacity-50 disabled:shadow-none"
+				>
+					Cancel
+				</button>
+				<button
+					@click="htmx.find('#search-results').innerHTML = ''"
+					type="submit"
+					data-ripple-light="true"
+					data-dialog-close="true"
+					class="middle none center rounded-lg bg-gradient-to-tr from-green-600 to-green-400 py-3 px-6 font-sans text-xs font-bold uppercase text-white shadow-md shadow-green-500/20 transition-all hover:shadow-lg hover:shadow-green-500/40 active:opacity-[0.85] disabled:pointer-events-none disabled:opacity-50 disabled:shadow-none"
+				>
+					Save
+				</button>
+			</div>
+		</form>
+	</div>
+}
+
+templ dialogAdd(c echo.Context) {
+	<div
+		data-dialog-backdrop="dialog-add"
+		class="pointer-events-none fixed inset-0 z-[999] grid h-screen w-screen place-items-center bg-black bg-opacity-60 opacity-0 backdrop-blur-sm transition-opacity duration-300"
+	>
+		<form
+			id="form-add"
+			hx-post={ c.Echo().Reverse("my.storeSong") }
+			hx-ext="json-enc"
+			hx-swap="innerHTML"
+			hx-include="#form-add > main > div > input, #form-add > main > div > textarea"
+			hx-headers={ utils.Convert2Json(map[string]any{
+				"X-CSRF-Token": utils.GetContext[string](c, "csrf"),
+			}) }
+			hx-indicator="#search-loading"
+			data-dialog="dialog-add"
+			class="relative m-4 p-4 w-2/5 min-w-[40%] max-w-[40%] rounded-lg bg-white shadow-sm"
+		>
+			<div
+				class="flex items-center p-4 font-sans text-2xl antialiased font-semibold leading-snug border-b-2 shrink-0 text-blue-gray-900"
+			>
+				Add Song
+			</div>
+			<main id="form-edit-content" class="flex flex-wrap items-center justify-end p-4 overflow-y-scroll h-80 gap-y-3 shrink-0 text-blue-gray-500">
+				@DialongInput(models.SongLyricResponse{})
+			</main>
+			<div class="flex justify-end gap-2 p-4">
+				<button
+					type="button"
+					data-ripple-dark="true"
+					data-dialog-close="true"
+					class="px-6 py-3 mr-1 font-sans text-xs font-bold text-red-500 uppercase transition-all rounded-lg middle none center hover:bg-red-500/10 active:bg-red-500/30 disabled:pointer-events-none disabled:opacity-50 disabled:shadow-none"
+				>
+					Cancel
+				</button>
+				<button
+					@click="htmx.find('#search-results').innerHTML = '';"
+					type="submit"
+					data-ripple-light="true"
+					data-dialog-close="true"
+					class="middle none center rounded-lg bg-gradient-to-tr from-green-600 to-green-400 py-3 px-6 font-sans text-xs font-bold uppercase text-white shadow-md shadow-green-500/20 transition-all hover:shadow-lg hover:shadow-green-500/40 active:opacity-[0.85] disabled:pointer-events-none disabled:opacity-50 disabled:shadow-none"
+				>
+					Save
+				</button>
+			</div>
+		</form>
+	</div>
+}

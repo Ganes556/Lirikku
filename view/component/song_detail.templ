@@ -1,0 +1,25 @@
+package view_component
+
+import "fmt"
+
+templ SongsDetail[T map[string]any](data T) {
+	<div class="flex flex-col m-auto">
+		<div class="mb-4 ms-auto" id="copy-clipboard"></div>
+		<h1 class="mb-4 font-bold text-center">{ data["title"].(string) } ~ { data["artist_names"].(string) }</h1>
+		<p class="whitespace-pre text-start">
+			if lyric, ok := data["lyric"].(string); !ok {
+				lyric not found
+			} else {
+				{ lyric }
+				<template x-teleport="#copy-clipboard" x-data="{copied: false}">
+					@BtnDefault(BtnParams{templ.Attributes{
+						"@click": fmt.Sprintf("$clipboard(`%s`);copied=true", lyric),
+						"x-show": "true",
+						"x-text": "(copied) ? 'Copied' : 'Copy Song Lyric'",
+					}, XSmall}) {
+					}
+				</template>
+			}
+		</p>
+	</div>
+}

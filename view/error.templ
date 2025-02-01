@@ -1,0 +1,20 @@
+package view
+
+import (
+	"fmt"
+	view_layout "github.com/Lirikku/view/layout"
+	"github.com/labstack/echo/v4"
+)
+
+templ Error(err *echo.HTTPError) {
+	@view_layout.Main("Error") {
+		<section class="flex w-screen h-screen">
+			<div class="m-auto">
+				<div class="text-xl font-light md:text-3xl">
+					<span class="border-r-2 border-black pe-2">{ fmt.Sprint(err.Code) }</span>
+					<span>{ fmt.Sprint(err.Message) }</span>
+				</div>
+			</div>
+		</section>
+	}
+}

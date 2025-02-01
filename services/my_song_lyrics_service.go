@@ -2,19 +2,21 @@ package services
 
 import (
 	"errors"
+	"slices"
 
 	"github.com/Lirikku/configs"
 	"github.com/Lirikku/models"
 )
 
 type IMySongLyricsService interface {
-	GetSongLyrics(userID uint, offset, pageSize int) ([]models.SongLyricResponse, error)
+	GetSongLyrics(userID uint, offset, pageSize int) ([]*models.SongLyricResponse, error)
 	GetSongLyric(idSongLyric int,userID uint) (models.SongLyricResponse, error)
 	CheckSongLyric(userID uint, req models.SongLyricWrite) error 
 	SaveSongLyric(userID uint, req models.SongLyricWrite) error
-	SearchSongLyrics(userID uint, title, lyric, artist_names string, offset, pageSize int) ([]models.SongLyricResponse,error)
+	SearchSongLyrics(userID uint, term string, offset, pageSize int) ([]*models.SongLyricResponse,error)
 	DeleteSongLyric(idSongLyric int, userID uint) error
-	UpdateSongLyric(idSongLyric int, userID uint, req models.SongLyricWrite) error
+	UpdateSongLyric(idSongLyric int, userID uint, req models.SongLyricUpdate) error
+	CheckKeyPub(userId uint, pubRes []*models.PublicSongsResponse, keyPub []string) error
 }
 
 type MySongLyricsRepo struct{}
@@ -33,13 +35,13 @@ func SetMySongLyricsRepo(repo IMySongLyricsService) {
 	mySongLyricsRepo = repo
 }
 
-func (my *MySongLyricsRepo) GetSongLyrics(userID uint, offset, pageSize int) ([]models.SongLyricResponse, error) {
-	var res []models.SongLyricResponse
+func (my *MySongLyricsRepo) GetSongLyrics(userID uint, offset, pageSize int) ([]*models.SongLyricResponse, error) {
+	var res []*models.SongLyricResponse
 	
-	err := configs.DB.Model(&models.SongLyric{}).Limit(pageSize).Offset(offset).Find(&res, "user_id = ?", userID).Error
+	err := configs.DB.Model(&models.SongLyric{}).Omit("lyric").Limit(pageSize).Offset(offset).Find(&res, "user_id = ?", userID).Error
 	
 	if err != nil {
-		return res, err
+		return nil, err
 	}
 	return res, nil
 }
@@ -71,6 +73,7 @@ func (my *MySongLyricsRepo) SaveSongLyric(userID uint, req models.SongLyricWrite
 		UserID: userID,
 		Title: req.Title,
 		Lyric: req.Lyric,
+		KeyShazam: req.Key,
 		ArtistNames: req.ArtistNames,
 	}
 
@@ -81,18 +84,33 @@ func (my *MySongLyricsRepo) SaveSongLyric(userID uint, req models.SongLyricWrite
 	return nil
 }
 
-func (my *MySongLyricsRepo) SearchSongLyrics(userID uint, title, lyric, artist_names string, offset, pageSize int) ([]models.SongLyricResponse,error) {
+func (my *MySongLyricsRepo) SearchSongLyrics(userID uint, term string, offset, pageSize int) ([]*models.SongLyricResponse,error) {
 
-	var resSongLyrics []models.SongLyricResponse
+	var resSongLyrics []*models.SongLyricResponse
 
-	err := configs.DB.Model(&models.SongLyric{}).Where("user_id = ? AND title LIKE ? AND lyric LIKE ? AND artist_names LIKE ?", userID, "%"+title+"%", "%"+lyric+"%", "%"+artist_names+"%").Limit(pageSize).Offset(offset).Find(&resSongLyrics).Error
+	err := configs.DB.Model(&models.SongLyric{}).Where("user_id = ? AND (title LIKE ? OR lyric LIKE ? OR artist_names LIKE ?)", userID, "%"+term+"%", "%"+term+"%", "%"+term+"%").Limit(pageSize).Offset(offset).Find(&resSongLyrics).Error
 
 	if err != nil {
-		return resSongLyrics, err
+		return nil, err
 	}
 
 	return resSongLyrics, nil
 
+}
+
+func (my *MySongLyricsRepo) CheckKeyPub(userId uint, pubRes []*models.PublicSongsResponse, keyPub []string) error {
+	var savedKeySong = make([]string, len(keyPub))
+	err := configs.DB.Select("key_shazam").Model(&models.SongLyric{}).Where("user_id = ? AND key_shazam IN (?)", userId, keyPub).Pluck("key", &savedKeySong).Error
+	if err != nil {
+		return err
+	}
+	
+	for i, v := range keyPub {
+		if slices.Contains[[]string](savedKeySong, v) {
+			pubRes[i].Saved = true
+		}
+	}
+	return nil
 }
 
 func (my *MySongLyricsRepo) DeleteSongLyric(idSongLyric int, userID uint) error{
@@ -105,11 +123,14 @@ func (my *MySongLyricsRepo) DeleteSongLyric(idSongLyric int, userID uint) error{
 	return  nil
 }
 
-func (my *MySongLyricsRepo) UpdateSongLyric(idSongLyric int, userID uint, req models.SongLyricWrite) error{
+func (my *MySongLyricsRepo) UpdateSongLyric(idSongLyric int, userID uint, req models.SongLyricUpdate) error{
+	
 	updateSongLyric := models.SongLyric{
 		Title: req.Title,
+		ArtistNames: req.ArtistNames,
 		Lyric: req.Lyric,
 	}
+
 	err := configs.DB.Model(&models.SongLyric{}).Where("id = ? AND user_id = ?", idSongLyric, userID).Updates(updateSongLyric).Error
 
 	if err != nil {

@@ -1,30 +1,22 @@
 package models
 
-import "strings"
+// type RapidShazamSearchAudioResponse struct {
+// 	Track struct {
+// 		Key      string `json:"key"`
+// 		Title    string `json:"title"`
+// 		Subtitle string `json:"subtitle"`
+// 		Sections []struct {
+// 			Text []string `json:"text,omitempty"`
+// 		} `json:"sections"`
+// 	} `json:"track"`
+// }
 
 type RapidShazamSearchAudioResponse struct {
 	Track struct {
-		Key      string `json:"key"`
-		Title    string `json:"title"`
 		Subtitle string `json:"subtitle"`
-		Sections []struct {
-			Text []string `json:"text,omitempty"`
-		} `json:"sections"`
+		Title    string `json:"title"`
 	} `json:"track"`
-}
-
-func (sa *RapidShazamSearchAudioResponse) GetLyric() string {
-	var lyrics string
-	if len(sa.Track.Sections) > 1 {
-		lyrics = strings.Join(sa.Track.Sections[1].Text, "\n")
-	}
-	return lyrics
-}
-
-func (sa *RapidShazamSearchAudioResponse) GetInPublicSongLyricResponse() PublicSongLyricResponse {
-	var res PublicSongLyricResponse
-	res.Title = sa.Track.Title
-	res.ArtistNames = sa.Track.Subtitle
-	res.Lyric = sa.GetLyric()
-	return res
+	Tagid     string `json:"tagid"`
+	Timestamp int64  `json:"timestamp"`
+	Timezone  string `json:"timezone"`
 }

@@ -1,0 +1,1 @@
+import{h as t}from"./assets/htmx.min-BDSWTZMZ.js";t.defineExtension("json-enc",{onEvent:function(e,n){e==="htmx:configRequest"&&(n.detail.headers["Content-Type"]="application/json")},encodeParameters:function(e,n,i){return e.overrideMimeType("text/json"),JSON.stringify(n)}});
